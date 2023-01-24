@@ -3,6 +3,9 @@ package mybook.mymarket.repository;
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.domain.Order;
+import mybook.mymarket.domain.OrderItem;
+import mybook.mymarket.repository.order.query.OrderItemQueryDto;
+import mybook.mymarket.repository.order.query.OrderQueryDto;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -11,6 +14,8 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,6 +29,58 @@ public class OrderRepository {
 
     public Order findOne(Long id) {
         return em.find(Order.class, id);
+    }
+
+    public List<OrderQueryDto> findAllByString_optimization(OrderSearch orderSearch) {
+        List<Order> orders = findAllByString(orderSearch);
+
+        List<OrderQueryDto> result = orders.stream().map(o -> new OrderQueryDto(o.getId(), o.getMember().getId(), o.getMember().getNickName(), o.getOrderDate(),
+                o.getStatus(), o.getDeal().getStatus(), o.getDeal().getAddress())).collect(Collectors.toList());
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(toOrderIds(result));
+
+        result.forEach(orderQueryDto -> orderQueryDto.setOrderItems(orderItemMap.get(orderQueryDto.getOrderId())));
+
+        return result;
+    }
+
+    public List<OrderQueryDto> findMyOrders_optimization(Long memberId) {
+        List<Order> myOrders = findMyOrders(memberId);
+
+        List<OrderQueryDto> result = myOrders.stream().map(o -> new OrderQueryDto(o.getId(), o.getMember().getId(), o.getMember().getNickName(), o.getOrderDate(),
+                o.getStatus(), o.getDeal().getStatus(), o.getDeal().getAddress())).collect(Collectors.toList());
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(toOrderIds(result));
+
+        result.forEach(orderQueryDto -> orderQueryDto.setOrderItems(orderItemMap.get(orderQueryDto.getOrderId())));
+
+        return result;
+    }
+
+    private static List<Long> toOrderIds(List<OrderQueryDto> result) {
+        List<Long> orderIds = result.stream()
+                .map(o -> o.getOrderId())
+                .collect(Collectors.toList());
+
+        return orderIds;
+    }
+
+    private Map<Long, List<OrderItemQueryDto>> findOrderItemMap(List<Long> orderIds) {
+        List<OrderItemQueryDto> orderItems = em.createQuery(
+                        "select new mybook.mymarket.repository.order.query." +
+                                "OrderItemQueryDto(oi.order.id, r.member.id, i.id, i.name, r.member.nickName, oi.count, oi.orderPrice) " +
+                                "from OrderItem oi " +
+                                "join oi.item i " +
+                                "join i.register r " +
+//                                "join r.member m " +
+                                "where oi.order.id in :orderIds", OrderItemQueryDto.class)
+                .setParameter("orderIds", orderIds)
+                .getResultList();
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItemQueryDto::getOrderId));
+
+        return orderItemMap;
     }
 
     public List<Order> findAllByString(OrderSearch orderSearch) {
@@ -46,7 +103,9 @@ public class OrderRepository {
         /** 파라미터가 null 이거나 필요하지 않은 경우 => 동적쿼리 필요
          * JPQL 쿼리를 문자로 생성하기는 번거롭고, 실수로 인한 버그가 충분히 발생할 수 있다.*/
 
-        String jpql = "select o from Order o join o.member m join o.deal d";
+        String jpql = "select o from Order o " +
+                "join fetch o.member m " +
+                "join fetch o.deal d";
         boolean isFirstCondition = true;
 
         // 주문 상태 검색
@@ -120,8 +179,8 @@ public class OrderRepository {
     public List<Order> findMyOrders(Long memberId) {
         return em.createQuery(
                 "select o from Order o " +
-                        "join o.member m " +
-                        "join o.deal d " +
+                        "join fetch o.member m " +
+                        "join fetch o.deal d " +
                         "where m.id = :memberId", Order.class)
                 .setParameter("memberId", memberId)
                 .getResultList();

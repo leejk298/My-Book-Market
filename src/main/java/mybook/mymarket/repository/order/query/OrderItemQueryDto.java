@@ -8,14 +8,16 @@ import lombok.Data;
 public class OrderItemQueryDto {
     @JsonIgnore
     private Long orderId;
+    private Long registerMemberId;
     private Long itemId;
     private String itemName;
     private String registerMemberName;
     private int orderPrice;
     private int count;
 
-    public OrderItemQueryDto(Long orderId, Long itemId, String itemName, String registerMemberName, int orderPrice, int count) {
+    public OrderItemQueryDto(Long orderId, Long registerMemberId, Long itemId, String itemName, String registerMemberName, int orderPrice, int count) {
         this.orderId = orderId;
+        this.registerMemberId = registerMemberId;
         this.itemId = itemId;
         this.itemName = itemName;
         this.registerMemberName = registerMemberName;

@@ -42,12 +42,12 @@
             <thead>
             <tr>
                 <th>#</th>
+                <th>구매자명</th>
                 <th>판매자명</th>
                 <th>상품명</th>
                 <th>상품 주문 가격</th>
                 <th>상품 주문 수량</th>
                 <th>상태</th>
-                <th>구매자명</th>
                 <th>거래 확정</th>
                 <th>주문 취소</th>
                 <th></th>
@@ -57,23 +57,23 @@
             <span th:each="order : ${orders}">
                 <tr th:each="orderItem : ${order.orderItems}">
                     <td th:text="${orderItem.itemId}"></td>
+                    <td th:text="${order.orderMemberName}"></td>
                     <td th:text="${orderItem.registerMemberName}"></td>
                     <td th:text="${orderItem.itemName}"></td>
-                    <td th:text="${orderItem.price}"></td>
+                    <td th:text="${orderItem.orderPrice}"></td>
                     <td th:text="${orderItem.count}"></td>
                     <td th:text="${order.orderStatus}"></td>
-                    <td th:text="${order.nickName}"></td>
                     <td>
                         <a th:if="${order.dealStatus.name() == 'WAIT' && order.orderStatus.name() != 'CANCEL' && (order.memberId == member.id || orderItem.registerMemberId == member.id)}"
                            href="#"
-                           th:href="'javascript:complete('+${orderItem.orderItemOrderId}+')'"
-                           class="btn btn-primary">거래완료</a>
+                           th:href="'javascript:complete('+${orderItem.orderId}+')'"
+                           class="btn btn-outline-primary">거래완료</a>
                     </td>
                     <td>
                         <a th:if="${order.orderStatus.name() == 'ORDER' && order.memberId == member.id && order.dealStatus.name() == 'WAIT'}"
                            href="#"
-                           th:href="'javascript:cancel('+${orderItem.orderItemOrderId}+')'"
-                           class="btn btn-danger">주문취소</a>
+                           th:href="'javascript:cancel('+${orderItem.orderId}+')'"
+                           class="btn btn-outline-danger">주문취소</a>
                     </td>
                 </tr>
 

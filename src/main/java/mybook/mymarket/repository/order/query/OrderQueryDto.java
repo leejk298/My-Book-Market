@@ -14,6 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(of = "orderId")  // v6에서 collect()할 때 orderId를 기준으로 묶어줌
 public class OrderQueryDto {
     private Long orderId;
+    private Long memberId;
     private String orderMemberName;
     private LocalDateTime orderDate;
     private OrderStatus orderStatus;
@@ -26,9 +27,10 @@ public class OrderQueryDto {
     // => OrderItemDto 내부 클래스로 엔티티 -> DTO 로 변환시켜야함
     // => 온전히 엔티티가 아닌 DTO 로 API 스펙이 나가는 것
 
-    public OrderQueryDto (Long orderId, String orderMemberName, LocalDateTime orderDate, OrderStatus orderStatus,
+    public OrderQueryDto (Long orderId, Long memberId, String orderMemberName, LocalDateTime orderDate, OrderStatus orderStatus,
                           DealStatus dealStatus, Address address) {
         this.orderId = orderId;
+        this.memberId = memberId;
         this.orderMemberName = orderMemberName;
         this.orderDate = orderDate;
         this.orderStatus = orderStatus;
@@ -37,4 +39,5 @@ public class OrderQueryDto {
         // JPQL 을 짜더라도 new 키워드에 컬렉션을 바로 넣을 수 가 없음
         // this.orderItems = orderItems;
     }
+
 }

@@ -9,7 +9,9 @@ import mybook.mymarket.domain.Register;
 import mybook.mymarket.controller.dto.MemberDto;
 import mybook.mymarket.controller.dto.OrderDto;
 import mybook.mymarket.controller.dto.RegisterDto;
+import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.OrderSearch;
+import mybook.mymarket.repository.order.query.OrderQueryDto;
 import mybook.mymarket.service.MemberService;
 import mybook.mymarket.service.OrderService;
 import mybook.mymarket.service.RegisterService;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 public class OrderController {
     // 주문하기 위해서 dependency 가 필요함 => 주입
     private final OrderService orderService;
+    // 서비스 계층에서 단순히 위임만 하므로 바로 레포지토리 계층으로
+    private final OrderRepository orderRepository;
     private final MemberService memberService;
     private final RegisterService registerService;
 
@@ -83,18 +87,15 @@ public class OrderController {
                             @ModelAttribute("orderSearch") OrderSearch orderSearch,
                             Model model) {
         // Where 절에 검색될 조건들을 포함하는 Order 엔티티 리스트
-        List<Order> orders = orderService.findOrders(orderSearch);  // orderSearch: where 문에 들어갈 조건
+//        List<Order> orders = orderService.findOrders(orderSearch);  // orderSearch: where 문에 들어갈 조건
+        List<OrderQueryDto> orders = orderRepository.findAllByString_optimization(orderSearch);
         Member member = memberService.findOne(memberId);    // 엔티티 조회
 
         // 엔티티 -> DTO
         MemberDto memberDto = getMemberDto(member);
-        // 엔티티 리스트 -> DTO 리스트
-        List<OrderDto> orderDtoList = orders.stream()
-                .map(o -> new OrderDto(o))
-                .collect(Collectors.toList());
 
         model.addAttribute("member", memberDto);
-        model.addAttribute("orders", orderDtoList);
+        model.addAttribute("orders", orders);
 
         return "orders/orderList";   // 넘어온 파라미터를 바인딩 시킨 후 orderList 화면으로 넘김
     }
@@ -103,12 +104,11 @@ public class OrderController {
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
 
         Member member = memberService.findOne(memberId);
-        List<Order> orders = orderService.findMyOrders(memberId);
+//        List<Order> orders = orderService.findMyOrders(memberId);
+        List<OrderQueryDto> orderDtoList = orderRepository.findMyOrders_optimization(memberId);
 
         MemberDto memberDto = getMemberDto(member);
-        List<OrderDto> orderDtoList = orders.stream()
-                .map(o -> new OrderDto(o))
-                .collect(Collectors.toList());
+
 
         model.addAttribute("members", memberDto);
         model.addAttribute("orders", orderDtoList);

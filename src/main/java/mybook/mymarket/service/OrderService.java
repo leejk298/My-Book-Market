@@ -112,4 +112,8 @@ public class OrderService {
         return orderRepository.findAllByString(orderSearch);    // 회원명, 거래상태, 주문상테
 //        return orderRepository.findAll(orderSearch);
     }
+
+    public List<Order> findMyOrders(Long memberId) {
+        return orderRepository.findMyOrders(memberId);
+    }
 }

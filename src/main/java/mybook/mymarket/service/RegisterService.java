@@ -155,4 +155,8 @@ public class RegisterService {
 
         return reference;
     }
+
+    public List<Register> findMyRegisters(Long memberId) {
+        return registerRepository.findMyRegisters(memberId);
+    }
 }

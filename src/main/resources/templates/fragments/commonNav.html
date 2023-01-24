@@ -12,14 +12,13 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <!--홈 버튼-->
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">Home</a></li>
-
                     <!--회원이름-->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false" th:text="${session.nickName} + '님 환영합니다!'"></a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">나의 등록내역</a></li>
-                            <li><a class="dropdown-item" href="#">나의 주문내역</a></li>
+                            <li><a class="dropdown-item" href="/myRegisters">나의 등록내역</a></li>
+                            <li><a class="dropdown-item" href="/myOrders">나의 주문내역</a></li>
                             <li><a class="dropdown-item" href="/members/update">나의 정보 수정</a></li>
                             <li>
                                 <hr class="dropdown-divider" />
@@ -27,8 +26,6 @@
                             <li><a class="dropdown-item" href="/logout">로그아웃</a></li>
                         </ul>
                     </li>
-                    <!--text-->
-<!--                    <li class="nav-item"><a class="nav-link">환영합니다!</a></li>-->
                 </ul>
             </div>
         </div>

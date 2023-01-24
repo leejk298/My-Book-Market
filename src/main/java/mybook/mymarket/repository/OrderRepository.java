@@ -116,4 +116,14 @@ public class OrderRepository {
                 .getResultList();
         // SQL 에는 fetch 라는 말이 없음 => JPA 에서 나온 것
     }
+
+    public List<Order> findMyOrders(Long memberId) {
+        return em.createQuery(
+                "select o from Order o " +
+                        "join o.member m " +
+                        "join o.deal d " +
+                        "where m.id = :memberId", Order.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
 }

@@ -9,29 +9,7 @@
 <div class="container">
     <!--  <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
     <br>
-    <div>
-        <H2>전체 상품 목록</H2>
-        <form th:object="${registerSearch}" class="form-inline">
-            <div class="form-group mb-2">
-                <input type="text" th:field="*{nickName}" class="form-control" placeholder="회원명"/>
-            </div>
-
-            <div class="form-group mb-2">
-                <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명"/>
-            </div>
-
-            <div class="form-group mx-sm-1 mb-2">
-                <select th:field="*{registerStatus}" class="form-control">
-                    <option value="">등록상태</option>
-                    <option th:each="status : ${T(mybook.mymarket.domain.RegisterStatus).values()}"
-                            th:value="${status}"
-                            th:text="${status}">option
-                    </option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-success btn-lg">조회</button>
-        </form>
-    </div>
+    <H2>나의 상품 목록</H2>
     <div>
         <table class="table table-striped">
             <thead>

@@ -114,4 +114,14 @@ public class RegisterRepository {
                 .getResultList();
         // SQL 에는 fetch 라는 말이 없음 => JPA 에서 나온 것
     }
+
+    public List<Register> findMyRegisters(Long memberId) {
+        return em.createQuery(
+                "select r from Register r " +
+                        "join r.member m " +
+                        "join r.item i " +
+                        "where m.id = :memberId", Register.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
 }

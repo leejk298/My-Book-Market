@@ -82,6 +82,20 @@ public class RegisterController {   // Controller 가 Service 갖다씀
 
         return "registers/itemList";
     }
+    @GetMapping("/myRegisters")
+    public String myList(@SessionAttribute(name = "memberId") Long memberId, Model model) {
+
+        List<Register> registers = registerService.findMyRegisters(memberId);
+
+        List<RegisterDto> registerDtoList = registers.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        model.addAttribute("memberId", memberId);
+        model.addAttribute("registers", registerDtoList);
+
+        return "registers/myItemList";
+    }
 
     /**
      * 등록상품 수정

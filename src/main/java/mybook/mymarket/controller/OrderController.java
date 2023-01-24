@@ -99,6 +99,24 @@ public class OrderController {
         return "orders/orderList";   // 넘어온 파라미터를 바인딩 시킨 후 orderList 화면으로 넘김
     }
 
+    @GetMapping("/myOrders")
+    public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
+
+        Member member = memberService.findOne(memberId);
+        List<Order> orders = orderService.findMyOrders(memberId);
+
+        MemberDto memberDto = getMemberDto(member);
+        List<OrderDto> orderDtoList = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+
+        model.addAttribute("members", memberDto);
+        model.addAttribute("orders", orderDtoList);
+
+        return "orders/myOrderList";
+    }
+
+
     @PostMapping("/orders/{orderId}/complete")  // 거래 완료
     public String completeDeal(@PathVariable("orderId") Long orderId) {
         orderService.completeDeal(orderId); // 해당 주문의 거래 정보 업데이트

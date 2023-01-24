@@ -1,35 +1,43 @@
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org"> <!-- 네임스페이스를 타임리프로 설정 -->
-<head th:replace="fragments/header :: header"> <!-- include => 랜더링 될 때 바꿔치기 -->
-  <title>Hello</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/commonHead :: head"></head>
 
 <body>
-<div class="container">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:replace="fragments/commonNav :: navbar"></nav>
 
-  <div th:replace="fragments/bodyHeader :: bodyHeader" />
-  <a class="btn btn-lg btn-primary" href="/logout">로그아웃</a>
-  <div class="jumbotron">
-    <h1>HELLO SHOP</h1>
-    <p class="lead">회원 기능</p>
-    <p>
-      <a class="btn btn-lg btn-secondary" href="/members/update">회원 정보 수정</a>
-      <a class="btn btn-lg btn-secondary" href="/members">전체 회원 목록</a>
-    </p>
-    <p class="lead">상품 기능</p>
-    <p>
-      <a class="btn btn-lg btn-dark" href="/register">상품 등록하기</a>
-      <a class="btn btn-lg btn-dark" href="/registers">전체 상품 목록</a>
-    </p>
-    <p class="lead">주문 기능</p>
-    <p>
-      <a class="btn btn-lg btn-info" href="/order">상품 주문하기</a>
-      <a class="btn btn-lg btn-info" href="/orders">전체 주문 내역</a>
-    </p>
-  </div>
-  <div th:replace="fragments/footer :: footer" />
-</div> <!-- /container -->
-
+<!-- Page content-->
+<div class="container-lg">
+    <div class="text-center mt-5">
+        <h1>My Market</h1>
+        <p class="lead">Spring, JPA를 이용해 웹앱 제작</p>
+        <div class="text-center mt-5">
+            <br>
+            <div class="row align-items-end, p-3 mb-2 bg-light text-dark">
+                <div class="col">
+                    <p class="fw-bold, fs-3">상품 등록</p>
+                    <a class="btn btn-outline-success btn-lg" href="/register">등록</a>
+                </div>
+                <div class="col">
+                    <p class="fw-bold, fs-3">상품 주문</p>
+                    <a class="btn btn-outline-success btn-lg" href="/order">주문</a>
+                </div>
+                <div class="col">
+                    <p class="fw-bold, fs-3">상품 조회</p>
+                    <a class="btn btn-outline-secondary btn-lg" href="/registers">조회</a>
+                </div>
+                <div class="col">
+                    <p class="fw-bold, fs-3">주문 조회</p>
+                    <a class="btn btn-outline-secondary btn-lg" href="/orders">조회</a>
+                </div>
+                <div class="col">
+                    <p class="fw-bold, fs-3">회원 조회</p>
+                    <a class="btn btn-outline-secondary btn-lg" href="/members">조회</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
+
 </html>

@@ -26,11 +26,10 @@
             <label th:for="password">password</label>
             <input type="password" th:field="*{password}" class="form-control" placeholder="password를 입력하세요">
         </div>
-        <button type="submit" class="btn btn-lg btn-primary">로그인</button>
-        <a class="btn btn-lg btn-primary" href="/join">회원 가입</a>
+        <button type="submit" class="btn btn-outline-primary btn-lg">로그인</button>
+        <a class="btn btn-outline-primary btn-lg" href="/join">회원 가입</a>
     </form>
     <br/>
-    <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
 </body>
 </html>

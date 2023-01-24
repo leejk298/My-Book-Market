@@ -50,6 +50,7 @@ public class LoginController {  // Controller 가 Service 갖다씀
         HttpSession session = request.getSession();
         // 세션에 로그인 정보 보관
         session.setAttribute("memberId", memberId); // 이름이 memberId 이고 값이 memberId
+        session.setAttribute("nickName", loginMember.getNickName());
 //        session.setMaxInactiveInterval(60);
 
         return "home";

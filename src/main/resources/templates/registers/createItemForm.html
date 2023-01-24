@@ -1,46 +1,52 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header" />
+<head th:replace="fragments/commonHead :: head"></head>
+<!--<head th:replace="fragments/header :: header" />-->
+
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:replace="fragments/commonNav :: navbar"></nav>
 
+<br>
 <div class="container">
-  <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-  <h3> <span th:text="${member.nickName} + '님 환영합니다 !'"></span></h3>
-  <br/>
-  <form th:action="@{/register}" th:object="${form}" method="post">
-    <div class="form-group">
-      <label th:for="name">상품명</label>
-      <input type="text" th:field="*{name}" class="form-control" placeholder="이름을 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="author">저자</label>
-      <input type="text" th:field="*{author}" class="form-control" placeholder="저자를 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="price">판매가격</label>
-      <input type="number" th:field="*{price}" class="form-control" placeholder="가격을 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="stockQuantity">수량</label>
-      <input type="number" th:field="*{stockQuantity}" class="form-control" placeholder="수량을 입력하세요">
-    </div>
-    <div class="form-group">
-      <div>상품 종류</div>
-      <div th:each="type : ${itemTypeForm}" class="form-check form-check-inline">
-        <input type="radio" th:field="*{itemTypeForm}" th:value="${type.name()}" class="form-check-input">
-        <label th:for="${#ids.prev('itemTypeForm')}" th:text="${type.description}" class="form-check-label">
-        </label>
-      </div>
-    </div>
-    <div class="form-group">
-        <label th:for="etc">추가정보(소설-장르, 잡지-테마, 참고서-과목)</label>
-        <input type="text" th:field="*{etc}" class="form-control" placeholder="추가정보를 입력하세요">
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+    <!--  <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
+    <!--  <h3> <span th:text="${member.nickName} + '님 환영합니다 !'"></span></h3>-->
+    <!--  <br/>-->
+    <form th:action="@{/register}" th:object="${form}" method="post">
+        <H2>상품 등록</H2>
+        <br>
+        <div class="form-group">
+            <label th:for="name">상품명</label>
+            <input type="text" th:field="*{name}" class="form-control" placeholder="이름을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="author">저자</label>
+            <input type="text" th:field="*{author}" class="form-control" placeholder="저자를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="price">판매가격</label>
+            <input type="number" th:field="*{price}" class="form-control" placeholder="가격을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="stockQuantity">수량</label>
+            <input type="number" th:field="*{stockQuantity}" class="form-control" placeholder="수량을 입력하세요">
+        </div>
+        <div class="form-group">
+            <div>상품 종류</div>
+            <div th:each="type : ${itemTypeForm}" class="form-check form-check-inline">
+                <input type="radio" th:field="*{itemTypeForm}" th:value="${type.name()}" class="form-check-input">
+                <label th:for="${#ids.prev('itemTypeForm')}" th:text="${type.description}" class="form-check-label">
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label th:for="etc">추가정보(소설-장르, 잡지-테마, 참고서-과목)</label>
+            <input type="text" th:field="*{etc}" class="form-control" placeholder="추가정보를 입력하세요">
+        </div>
+        <button type="submit" class="btn btn-primary">등록</button>
+    </form>
 
-  <br/>
-  <div th:replace="fragments/footer :: footer" />
+    <br/>
+    <!--  <div th:replace="fragments/footer :: footer" />-->
 
 </div> <!-- /container -->
 

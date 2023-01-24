@@ -1,10 +1,13 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header" />
+<head th:replace="fragments/commonHead :: head"></head>
+
+<!--<head th:replace="fragments/header :: header" />-->
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:replace="fragments/commonNav :: navbar"></nav>
 
 <div class="container">
-  <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+<!--  <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
 
   <form th:object="${form}" method="post">
     <!--
@@ -30,7 +33,7 @@
     <button type="submit" class="btn btn-primary">수정하기</button>
   </form>
 
-  <div th:replace="fragments/footer :: footer" />
+<!--  <div th:replace="fragments/footer :: footer" />-->
 
 </div> <!-- /container -->
 

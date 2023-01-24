@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/market
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none # create
+    properties:
+      hibernate:
+        # show_sql: true
+        format_sql: true
+        default_batch_fetch_size: 100 # 전역적, where 절에서 in 쿼리의 개수 => id값 개수
+
+logging.level:
+  org.hibernate.SQL: debug
+  # org.hibernate.type: trace

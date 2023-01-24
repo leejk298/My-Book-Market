@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header" />
+<body>
+<div class="container">
+  <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+  <div>
+    <H2> 전체 상품 목록</H2>
+    <form th:object="${registerSearch}" class="form-inline">
+      <div class="form-group mb-2">
+        <input type="text" th:field="*{nickName}" class="form-control" placeholder="회원명"/>
+      </div>
+
+      <div class="form-group mb-2">
+        <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명"/>
+      </div>
+
+      <div class="form-group mx-sm-1 mb-2">
+        <select th:field="*{registerStatus}" class="form-control">
+          <option value="">등록상태</option>
+          <option th:each="status : ${T(mybook.mymarket.domain.RegisterStatus).values()}"
+                  th:value="${status}"
+                  th:text="${status}">option
+          </option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary mb-2">검색</button>
+    </form>
+  </div>
+  <div>
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>회원명</th>
+        <th>상품명</th>
+        <th>가격</th>
+        <th>수량</th>
+        <th>상태</th>
+        <th>나의 등록상품</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="register : ${registers}">
+        <td th:text="${register.registerId}"></td>
+        <td th:text="${register.nickName}"></td>
+        <td th:text="${register.itemName}"></td>
+        <td th:text="${register.price}"></td>
+        <td th:text="${register.stockQuantity}"></td>
+        <td th:text="${register.status}"></td>
+        <td>
+          <!-- 수정 -->
+          <th:block>
+            <div th:if="${register.memberId == memberId}">
+              <a href="#" th:href="@{/registers/{id}/edit (id=${register.itemId})}" class="btn btn-primary" role="button">수정</a>
+              <a href="#" th:href="@{/registers/{id}/cancel (id=${register.registerId})}" th:if="${register.status.name() != 'CANCEL'}" class="btn btn-danger" role="button">CANCEL</a>
+            </div>
+          </th:block>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div th:replace="fragments/footer :: footer"/>
+
+</div> <!-- /container -->
+</body>
+</html>

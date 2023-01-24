@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div class="container">
+  <div th:replace="fragments/bodyHeader :: bodyHeader"></div>
+  <div>
+    <div>
+        <div class="form-group">
+            <h4> <span th:text="${member.nickName} + '님 환영합니다 !'"></span></h4>
+        </div>
+
+      <form th:object="${orderSearch}" class="form-inline">
+        <div class="form-group mb-2">
+          <input type="text" th:field="*{nickName}" class="form-control" placeholder="회원명"/>
+        </div>
+
+        <div class="form-group mx-sm-1 mb-2">
+            <select th:field="*{dealStatus}" class="form-control">
+                <option value="">거래형태</option>
+                <option th:each="status : ${T(mybook.mymarket.domain.DealStatus).values()}"
+                        th:value="${status}"
+                        th:text="${status}">option
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group mx-sm-1 mb-2">
+          <select th:field="*{orderStatus}" class="form-control">
+            <option value="">주문상태</option>
+            <option th:each="status : ${T(mybook.mymarket.domain.OrderStatus).values()}"
+                    th:value="${status}"
+                    th:text="${status}">option
+            </option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">검색</button>
+      </form>
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+      <tr>
+          <th>#</th> <th>판매자명</th> <th>상품명</th> <th>상품 주문 가격</th> <th>상품 주문 수량</th>
+          <th>상태</th> <th>구매자명</th> <th>거래 확정</th> <th>주문 취소</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <span th:each="order : ${orders}">
+                <tr th:each="orderItem : ${order.orderItems}">
+                    <td th:text="${orderItem.itemId}"></td>
+                    <td th:text="${orderItem.registerMemberName}"></td>
+                    <td th:text="${orderItem.itemName}"></td>
+                    <td th:text="${orderItem.price}"></td>
+                    <td th:text="${orderItem.count}"></td>
+                    <td th:text="${order.orderStatus}"></td>
+                    <td th:text="${order.nickName}"></td>
+                    <td>
+                        <a th:if="${order.dealStatus.name() == 'WAIT' && order.orderStatus.name() != 'CANCEL' && (order.memberId == member.id || orderItem.registerMemberId == member.id)}" href="#"
+                           th:href="'javascript:complete('+${orderItem.orderItemOrderId}+')'"
+                           clss="btn btn-primary">거래완료</a>
+                    </td>
+                    <td>
+                        <a th:if="${order.orderStatus.name() == 'ORDER' && order.memberId == member.id && order.dealStatus.name() == 'WAIT'}" href="#"
+                           th:href="'javascript:cancel('+${orderItem.orderItemOrderId}+')'"
+                           class="btn btn-danger">주문취소</a>
+                    </td>
+                </tr>
+
+            </span>
+      </tbody>
+    </table>
+  </div>
+  <div th:replace="fragments/footer :: footer"></div>
+</div> <!-- /container -->
+</body>
+<script>
+    function complete(id) {
+        var form = document.createElement("form");
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "/orders/" + id + "/complete");
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+<script>
+    function cancel(id) {
+        var form = document.createElement("form");
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "/orders/" + id + "/cancel");
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+</html>

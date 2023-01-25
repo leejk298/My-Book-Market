@@ -34,7 +34,9 @@
                         </option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-success btn-lg">조회</button>
+                <div class="form-group mx-sm-1 mb-2">
+                <button type="submit" class="btn btn-success btn-md">Search</button>
+                </div>
             </form>
         </div>
 
@@ -74,6 +76,8 @@
                            href="#"
                            th:href="'javascript:cancel('+${orderItem.orderId}+')'"
                            class="btn btn-outline-danger">주문취소</a>
+                    </td>
+                    <td>
                     </td>
                 </tr>
 

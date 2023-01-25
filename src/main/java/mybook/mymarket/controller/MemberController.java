@@ -71,11 +71,14 @@ public class MemberController {
 
     @PostMapping("/members/update")
     public String updateMember(@SessionAttribute(name = "memberId") Long memberId,
-                               @ModelAttribute("form") @NotNull MemberForm form) {
+                               @ModelAttribute("form") @Valid @NotNull MemberForm form, BindingResult result) {
         // @ModelAttribute("form") : form 객체에 바인딩하기 위해
         // 영속 엔티티는 JPA 가 dirty checking 을 통해 변경이 일어나면
         // update 쿼리를 날려서 바꿔줌
         // Form -> DTO 바꿔서 객체 날려보자
+        if(result.hasErrors())
+            return "members/updateMemberForm";
+
         MemberDto memberDto = getMemberDto(form);
         memberService.updateMember(memberId, memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
         /** 준영속 엔티티

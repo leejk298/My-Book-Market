@@ -1,54 +1,59 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/commonHead :: head"></head>
-<!--<head th:replace="fragments/header :: header" />-->
+<style>
+    .fieldError {
+        border-color: #bd2130;
+    }
+</style>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:replace="fragments/commonNav :: navbar"></nav>
 
 <div class="container">
-  <br>
-  <H2>나의 정보 수정</H2>
-  <br>
-  <!--  <div th:replace="fragments/bodyHeader :: bodyHeader"/>-->
+    <br>
+    <H2>나의 정보 수정</H2>
+    <div class="d-flex" style="background-color: lightGray; height: 1px;">
+        <div class="hr"></div>
+    </div>
+    <br>
 
-  <form th:object="${form}" method="post">
-    <!-- id -->
-    <input type="hidden" th:field="*{id}" />
+    <form th:object="${form}" method="post">
+        <!-- id -->
+        <input type="hidden" th:field="*{id}"/>
 
-    <div class="form-group">
-      <label th:for="nickName">ID</label>
-      <!-- name 에 대한 에러가 발생 시 fieldError(css) => 빨간색 테두리 + 에러 메시지를 띄움  -->
-      <input type="text" th:field="*{nickName}" class="form-control" placeholder="ID를 입력하세요"
-             th:class="${#fields.hasErrors('nickName')}? 'form-control fieldError' : 'form-control'">
-      <p th:if="${#fields.hasErrors('nickName')}" th:errors="*{nickName}">Incorrect date</p>
-    </div>
-    <div class="form-group">
-      <label th:for="password">password</label>
-      <input type="password" th:field="*{password}" class="form-control" placeholder="password를 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="userName">이름</label>
-      <input type="text" th:field="*{userName}" class="form-control" placeholder="이름을 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="city">도시</label>
-      <input type="text" th:field="*{city}" class="form-control" placeholder="도시를 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="street">거리</label>
-      <input type="text" th:field="*{street}" class="form-control" placeholder="거리를 입력하세요">
-    </div>
-    <div class="form-group">
-      <label th:for="zipcode">우편번호</label>
-      <input type="text" th:field="*{zipcode}" class="form-control" placeholder="우편번호를 입력하세요">
-    </div>
-
-    <button type="submit" class="btn btn-primary">수정하기</button>
-  </form>
-  <br/>
-<!--  <div th:replace="fragments/footer :: footer" />-->
+        <div class="form-group">
+            <label th:for="nickName">ID</label>
+            <!-- name 에 대한 에러가 발생 시 fieldError(css) => 빨간색 테두리 + 에러 메시지를 띄움  -->
+            <input type="text" th:field="*{nickName}" class="form-control" placeholder="ID를 입력하세요"
+                   th:class="${#fields.hasErrors('nickName')}? 'form-control fieldError' : 'form-control'">
+            <p th:if="${#fields.hasErrors('nickName')}" th:errors="*{nickName}">Incorrect date</p>
+        </div>
+        <div class="form-group">
+            <label th:for="password">password</label>
+            <input type="password" th:field="*{password}" class="form-control" placeholder="password를 입력하세요"
+                   th:class="${#fields.hasErrors('password')}? 'form-control fieldError' : 'form-control'">
+            <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Incorrect date</p>
+        </div>
+        <div class="form-group">
+            <label th:for="userName">이름</label>
+            <input type="text" th:field="*{userName}" class="form-control" placeholder="이름을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="city">도시</label>
+            <input type="text" th:field="*{city}" class="form-control" placeholder="도시를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="street">거리</label>
+            <input type="text" th:field="*{street}" class="form-control" placeholder="거리를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label th:for="zipcode">우편번호</label>
+            <input type="text" th:field="*{zipcode}" class="form-control" placeholder="우편번호를 입력하세요">
+        </div>
+        <button type="submit" class="btn btn-primary">수정하기</button>
+    </form>
+    <br/>
 
 </div> <!-- /container -->
-
 </body>
 </html>

@@ -103,14 +103,9 @@ public class OrderController {
     @GetMapping("/myOrders")
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
 
-        Member member = memberService.findOne(memberId);
 //        List<Order> orders = orderService.findMyOrders(memberId);
         List<OrderQueryDto> orderDtoList = orderRepository.findMyOrders_optimization(memberId);
 
-        MemberDto memberDto = getMemberDto(member);
-
-
-        model.addAttribute("members", memberDto);
         model.addAttribute("orders", orderDtoList);
 
         return "orders/myOrderList";

@@ -45,9 +45,8 @@ public class MemberApiController {
         // Member 엔티티는 파라미터로 무슨 값이 들어올 지 모르는데
         // Dto 로 받으면 스펙을 보고 무슨 값이 들어오는 지 알 수 있고, validation 도 자유롭게 가능함
         // 표현 계층과 엔티티 분리하게 됨 => 유지보수, 관리가 편함
-        Member member = createMember(memberDto);
 
-        Long id = memberService.join(member);   // 회원 등록
+        Long id = memberService.join(memberDto);   // 회원 등록
 
         return new CreateMemberResponse(id);    // 등록하여 반환된 id를 Json 형식으로 보여줌
     }
@@ -65,7 +64,7 @@ public class MemberApiController {
         // PathVariable 로 id 와 memberDto 의 name 과 address 가 넘어옴
         /** 커맨드와 쿼리를 분리하자 */
         // 커맨드: update 같은 변경성 메소드는 void 로 끝내거나 id값 정도만 반환함(찾기 위해)
-        memberService.updateMember(id, memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
+        memberService.updateMember(id, memberDto);
         // 쿼리: 그 후에 별도로 쿼리를 짠다
         Member findMember = memberService.findOne(id);
         // 등록하여 반환된 필드 값들을 Json 형식으로 보여줌
@@ -83,9 +82,9 @@ public class MemberApiController {
         List<Member> findMembers = memberService.findMembers();
 
         // 엔티티 List -> Dto List
-        List<MemberDto> MemberListDto = findMembers.stream()
+        List<ListMemberResponse> MemberListDto = findMembers.stream()
                 // 엔티티(m)를 Dto 에 넣어서 매핑
-                .map(m -> new MemberDto(m))
+                .map(m -> new ListMemberResponse(m.getId(), m.getNickName(), m.getUserName(), m.getAddress()))
                 // 매핑한 것을 List 로 변환
                 .collect(Collectors.toList());
 
@@ -103,14 +102,19 @@ public class MemberApiController {
     }
 
     private static Member createMember(MemberDto memberDto) {
-        Member member = new Member();   // 엔티티 객체 생성
+        Member member = new Member(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());   // 엔티티 객체 생성
         // 파라미터랑 엔티티를 컨트롤러에서 매핑시켜줌
-        member.setNickName(memberDto.getNickName());  // 값 세팅
-        member.setPassword(memberDto.getPassword());
-        member.setUserName(memberDto.getUserName());
-        member.setAddress(memberDto.getAddress());
 
         return member;
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class ListMemberResponse {
+        private Long id;
+        private String nickName;
+        private String userName;
+        private Address address;
     }
 
     @Data

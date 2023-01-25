@@ -1,6 +1,7 @@
 package mybook.mymarket.service;
 
 import lombok.RequiredArgsConstructor;
+import mybook.mymarket.controller.dto.MemberDto;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.repository.MemberRepository;
@@ -33,11 +34,14 @@ public class MemberService {
      * 회원가입 => 데이터 변경 필요 => @Transactional
      */
     @Transactional // JPA 에서 모든 데이터 변경이나 로직들은 트랜잭션 안에서 실행되어야함
-    public Long join(Member member) {
-        validateDuplicateMember(member.getNickName());    // 중복 회원 검증
+    public Long join(MemberDto memberDto) {
+        validateDuplicateMember(memberDto.getNickName());    // 중복 회원 검증
+
+        // Dto -> 엔티티
+        Member member = new Member(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
         memberRepository.save(member);
 
-        return member.getId();
+        return memberDto.getId();
     }
 
     private void validateDuplicateMember(String nickName) {   // 중복 검사
@@ -67,7 +71,7 @@ public class MemberService {
      * 변경 감지 (dirty checking)
      */
     @Transactional  // 데이터 변경하므로
-    public void updateMember(Long id, String nickName, String password, String userName, Address address) {
+    public void updateMember(Long id, MemberDto memberDto) {
         // 영속성 컨텍스트에 담기게 됨
         Member findMember = memberRepository.findOne(id);   // 영속 상태 엔티티
 
@@ -75,16 +79,16 @@ public class MemberService {
          * 회원 수정 시에도 중복검사 필요
          */
         // id를 바꿨을 때 && 해당 id가 이미 있을 때
-        if (!(findMember.getNickName().equals(nickName))) {   // 현재 id와 수정 id가 다를 때
+        if (!(findMember.getNickName().equals(memberDto.getNickName()))) {   // 현재 id와 수정 id가 다를 때
             // 중복 회원 검증
-            List<Member> findMembers = memberRepository.findByName(nickName);// 같은 이름이 있는지 체크
+            List<Member> findMembers = memberRepository.findByName(memberDto.getNickName());// 같은 이름이 있는지 체크
             // Exception
             if(!findMembers.isEmpty()) {    // 컬렉션이므로 isEmpty()
                 throw new IllegalStateException("이미 존재하는 회원입니다.");  // 예외처리
             }
         }
         // 현재 id와 수정 id가 같으면 그대로 변경
-        findMember.changeMember(nickName, password, userName, address);
+        findMember.changeMember(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
     }
 
     /**  커맨드와 쿼리를 분리하자 - 유지보수 편함

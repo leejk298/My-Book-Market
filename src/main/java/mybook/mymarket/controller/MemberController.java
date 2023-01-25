@@ -48,8 +48,9 @@ public class MemberController {
             return "members/createMemberForm";   // 화면까지 에러를 가져가서 뿌리게 됨
 
         // Form -> Dto
-        Member member = createMember(form);     // 객체 생성 및 저장
-        memberService.join(member); // 회원 가입
+        MemberDto memberDto = getMemberDto(form);
+//        Member member = createMember(form);     // 객체 생성 및 저장
+        memberService.join(memberDto); // 회원 가입
 
         return "redirect:/"; // 데이터가 저장되고 페이지가 재로딩되면 안좋기때문에 redirect => 처음화면으로
     }
@@ -80,7 +81,7 @@ public class MemberController {
             return "members/updateMemberForm";
 
         MemberDto memberDto = getMemberDto(form);
-        memberService.updateMember(memberId, memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
+        memberService.updateMember(memberId, memberDto);
         /** 준영속 엔티티
          : 영속성 컨텍스트가 더는 관리하지 않는 엔티티
          => Book 객체는 이미 DB에 한 번 저장되어서 식별자가 존재한다.
@@ -136,12 +137,9 @@ public class MemberController {
     }
 
     private static Member createMember(MemberForm form) {   // Form -> 엔티티
-        Member member = new Member();
-        member.setNickName(form.getNickName()); // 값 세팅
-        member.setPassword(form.getPassword());
-        member.setUserName(form.getUserName());
         Address address = new Address(form.getCity(), form.getStreet(), form.getZipcode());
-        member.setAddress(address);
+
+        Member member = new Member(form.getNickName(), form.getPassword(), form.getUserName(), address);
 
         return member;
     }

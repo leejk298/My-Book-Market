@@ -51,6 +51,16 @@ public class Member {
        this.address = address;
     }
 
+    protected Member() {
+    }
+
+    public Member(String nickName, String password, String userName, Address address) {
+        this.nickName = nickName;
+        this.password = password;
+        this.userName = userName;
+        this.address = address;
+    }
+
     // Setter
     public void setNickName(String nickName) {
         this.nickName = nickName;

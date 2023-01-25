@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.DealStatus;
+import mybook.mymarket.domain.DealType;
 import mybook.mymarket.domain.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class OrderQueryDto {
     private LocalDateTime orderDate;
     private OrderStatus orderStatus;
     private DealStatus dealStatus;
+    private DealType dealType;
     private Address address;
     private List<OrderItemQueryDto> orderItems;
     // DTO 안에 엔티티가 필드로 오면 안됨 (매핑 <OrderItem>도 포함)
@@ -28,13 +30,14 @@ public class OrderQueryDto {
     // => 온전히 엔티티가 아닌 DTO 로 API 스펙이 나가는 것
 
     public OrderQueryDto (Long orderId, Long memberId, String orderMemberName, LocalDateTime orderDate, OrderStatus orderStatus,
-                          DealStatus dealStatus, Address address) {
+                          DealStatus dealStatus, DealType dealType, Address address) {
         this.orderId = orderId;
         this.memberId = memberId;
         this.orderMemberName = orderMemberName;
         this.orderDate = orderDate;
         this.orderStatus = orderStatus;
         this.dealStatus = dealStatus;
+        this.dealType = dealType;
         this.address = address;
         // JPQL 을 짜더라도 new 키워드에 컬렉션을 바로 넣을 수 가 없음
         // this.orderItems = orderItems;

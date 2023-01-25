@@ -10,6 +10,7 @@ import mybook.mymarket.repository.OrderSearch;
 import mybook.mymarket.repository.order.query.OrderQueryDto;
 import mybook.mymarket.repository.order.query.OrderQueryRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class OrderApiController {
         // => 상당히 많은 쿼리가 나감 => 최적화 필요 => Fetch join
         // => 컬렉션인 경우 Fetch join 할 때 고민해야할 포인트가 많음 => V3
         // 엔티티를 조회해옴 => 실무에선 페이징으로 처리
-        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+        List<Order> orders = orderRepository.findAllWithMemberDeal();
 
         // 엔티티 List -> Dto List
         List<OrderDto> result = orders.stream()
@@ -54,24 +55,24 @@ public class OrderApiController {
     }
 
     /**
-     *  v3: Fetch Join - 엔티티
-     *  : v2랑 v3는 로직은 같지만 쿼리가 완전히 다름, Fetch join: 한방쿼리
-     *  한 번에 다 끌고와서 엔티티 -> Dto 로 변환하는 단점이 있음 => 최적화: 직접 Dto 이용(v4)
-     *  Order 를 기준으로 X To One 은 fetch join 을 하고
-     *  => ToOne 은 데이터 뻥튀기가 안되므로 한 번에 끌고와야 함
-     *  => Member(다대일), Delivery(일대일) 이므로 한방쿼리로 나옴
-     *  일대다 컬렉션의 경우 => Lazy 강제 초기화 => Lazy 로딩 최적화 => N + 1 문제 해결 필요
-     *  => default_batch_fetch_size: 100 # where 절에서 IN 쿼리의 개수 => id 개수
-     *  => OrderItem 을 컬렉션 개수만큼 한 번에 당겨오는 것
-     *  => 1 + N + M => 1 + 1 + 1 로 되어버림
-     *  => 조인보다 DB 데이터 전송량이 최적화 됨
-     *  하지만 item - register (OneToOne 양방향연관관계)에서 N + 1 문제 발생
-     *  => register 가 영속성 컨텍스트에 존재하지 않으므로 계속 DB 에 쿼리가 나가게 됨
-     *  => orderItem - item (ManyToOne), item - register (OneToOne) => ToOne 관계 직접 조인하여 해결 필요 (v4)
+     * v3: Fetch Join - 엔티티
+     * : v2랑 v3는 로직은 같지만 쿼리가 완전히 다름, Fetch join: 한방쿼리
+     * 한 번에 다 끌고와서 엔티티 -> Dto 로 변환하는 단점이 있음 => 최적화: 직접 Dto 이용(v4)
+     * Order 를 기준으로 X To One 은 fetch join 을 하고
+     * => ToOne 은 데이터 뻥튀기가 안되므로 한 번에 끌고와야 함
+     * => Member(다대일), Delivery(일대일) 이므로 한방쿼리로 나옴
+     * 일대다 컬렉션의 경우 => Lazy 강제 초기화 => Lazy 로딩 최적화 => N + 1 문제 해결 필요
+     * => default_batch_fetch_size: 100 # where 절에서 IN 쿼리의 개수 => id 개수
+     * => OrderItem 을 컬렉션 개수만큼 한 번에 당겨오는 것
+     * => 1 + N + M => 1 + 1 + 1 로 되어버림
+     * => 조인보다 DB 데이터 전송량이 최적화 됨
+     * 하지만 item - register (OneToOne 양방향연관관계)에서 N + 1 문제 발생
+     * => register 가 영속성 컨텍스트에 존재하지 않으므로 계속 DB 에 쿼리가 나가게 됨
+     * => orderItem - item (ManyToOne), item - register (OneToOne) => ToOne 관계 직접 조인하여 해결 필요 (v4)
      */
     @GetMapping("/api/v3/orders")
     public Result<List<OrderDto>> ordersV3() {
-        List<Order> orders = orderRepository.findAllWithMemberDeal();
+        List<Order> orders = orderRepository.findAllWithMemberDeal_fetch();
 
         List<OrderDto> result = orders.stream()
                 .map(o -> new OrderDto(o))
@@ -109,6 +110,38 @@ public class OrderApiController {
      3. 그래도 안되면 DTO 로 직접 조회하는 방법을 사용(V4)
      4. 최후의 방법은 JPA 가 제공하는 네이티브 SQL 이나 SpringJDBCTemplate 을 사용해서 SQL 직접 사용
      */
+
+    /**
+     * 나의 주문상품 조회
+     */
+    @GetMapping("/api/v2/myOrders/{id}")
+    public Result<List<OrderDto>> myOrdersV2(@PathVariable("id") Long memberId) {
+        List<Order> myOrders = orderRepository.findMyOrders(memberId);
+
+        List<OrderDto> result = myOrders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+
+        return new Result<>(result.size(), result);
+    }
+
+    @GetMapping("/api/v3/myOrders/{id}")
+    public Result<List<OrderDto>> myOrdersV3(@PathVariable("id") Long memberId) {
+        List<Order> myOrders = orderRepository.findMyOrders_fetch(memberId);
+
+        List<OrderDto> result = myOrders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+
+        return new Result<>(result.size(), result);
+    }
+
+    @GetMapping("/api/v4/myOrders/{id}")
+    public Result<List<OrderQueryDto>> myOrdersV4(@PathVariable("id") Long memberId) {
+        List<OrderQueryDto> myAllByDtoOptimization = orderQueryRepository.findMyAllByDto_optimization(memberId);
+
+        return new Result<>(myAllByDtoOptimization.size(), myAllByDtoOptimization);
+    }
 
     @Data
     @AllArgsConstructor // 필드 값을 전부 포함하는 생성자를 만들어줌

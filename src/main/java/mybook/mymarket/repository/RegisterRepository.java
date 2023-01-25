@@ -124,4 +124,14 @@ public class RegisterRepository {
                 .setParameter("memberId", memberId)
                 .getResultList();
     }
+
+    public List<Register> findMyRegisters_fetch(Long memberId) {
+        return em.createQuery(
+                        "select r from Register r " +
+                                "join fetch r.member m " +
+                                "join fetch r.item i " +
+                                "where m.id = :memberId", Register.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
 }

@@ -37,4 +37,21 @@ public class RegisterQueryRepository {
                         "join r.item i", RegisterQueryDto.class)
                 .getResultList();
     }
+
+    public List<RegisterQueryDto> findMyAllByDto(Long memberId) {
+        List<RegisterQueryDto> myRegisters = findMyRegistres(memberId);
+
+        return myRegisters;
+    }
+
+    public List<RegisterQueryDto> findMyRegistres(Long memberId) {
+        return em.createQuery(
+                "select new mybook.mymarket.repository.register.query." +
+                        "RegisterQueryDto(r.id, m.id, i.id, m.nickName, i.name, i.price, i.stockQuantity, r.registerDate, r.status)" +
+                        "from Register r join r.member m join r.item i " +
+                        "where m.id = :memberId", RegisterQueryDto.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
+
 }

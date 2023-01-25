@@ -1,10 +1,12 @@
 package mybook.mymarket.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import mybook.mymarket.domain.OrderItem;
 
 @Getter
 public class OrderItemDto {
+    @JsonIgnore
     private Long orderItemOrderId;  // 주문상품에 대한 주문 id
     private Long registerMemberId;  // 주문상품에 대한 등록한 회원 id
     private Long itemId;    // 주문상품에 대한 상품 id

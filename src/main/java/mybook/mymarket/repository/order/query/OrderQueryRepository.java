@@ -42,14 +42,34 @@ public class OrderQueryRepository {
         return result;
     }
 
+    public List<OrderQueryDto> findMyAllByDto_optimization(Long memberId) {
+        List<OrderQueryDto> result = findMyOrders(memberId);
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(toOrderIds(result));
+
+        result.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+
+        return result;
+    }
+
     // ToOne 관계 (M, D) => SQL 직접 조인 (fetch join 아님)
     private List<OrderQueryDto> findOrders() {
         return em.createQuery(
                         "select new mybook.mymarket.repository.order.query." +
-                                "OrderQueryDto(o.id, m.id, m.nickName, o.orderDate, o.status, d.status, d.address) " +
+                                "OrderQueryDto(o.id, m.id, m.nickName, o.orderDate, o.status, d.status, d.type, d.address) " +
                                 "from Order o " +
                                 "join o.member m " +
                                 "join o.deal d", OrderQueryDto.class)
+                .getResultList();
+    }
+
+    private List<OrderQueryDto> findMyOrders(Long memberId) {
+        return em.createQuery(
+                        "select new mybook.mymarket.repository.order.query." +
+                                "OrderQueryDto(o.id, m.id, m.nickName, o.orderDate, o.status, d.status, d.type, d.address) " +
+                                "from Order o join o.member m join o.deal d " +
+                                "where m.id = :memberId", OrderQueryDto.class)
+                .setParameter("memberId", memberId)
                 .getResultList();
     }
 

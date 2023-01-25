@@ -37,7 +37,7 @@ public class MemberApiController {
     /**
      * 회원 등록
      */
-    @PostMapping("/api/joinMembers") // 등록이므로 @PostMapping
+    @PostMapping("/api/join") // 등록이므로 @PostMapping
     public CreateMemberResponse saveMember(@RequestBody @Valid MemberDto memberDto) {
         // 별도의 Dto(Data transfer object)를 파라미터
         // @RequestBody: 요청이 온 data 를 RequestBody 로 CreateMemberRequest 에 바인딩

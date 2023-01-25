@@ -2,10 +2,9 @@ package mybook.mymarket.controller.dto;
 
 
 import lombok.Getter;
-import mybook.mymarket.domain.DealStatus;
-import mybook.mymarket.domain.Order;
-import mybook.mymarket.domain.OrderStatus;
+import mybook.mymarket.domain.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,9 +12,12 @@ import java.util.stream.Collectors;
 public class OrderDto {
     private Long orderId;
     private Long memberId;      // 주문한 회원 id
-    private String nickName;    // 주문한 회원 이름
+    private String orderMemberName;    // 주문한 회원 이름
+    private LocalDateTime orderDate;
     private OrderStatus orderStatus;    //  주문 상태
     private DealStatus dealStatus;  //  거래 상태
+    private DealType dealType;
+    private Address address;
     private List<OrderItemDto> orderItems;  //  주문 상품
     /**
      * private List<OrderItem> orderItems; // 추가
@@ -31,9 +33,12 @@ public class OrderDto {
     public OrderDto(Order order) {  // 파라미터 생성자
         this.orderId = order.getId();
         this.memberId = order.getMember().getId();      // Proxy 초기화
-        this.nickName = order.getMember().getNickName();    // Proxy 초기화
+        this.orderMemberName = order.getMember().getNickName();    // Proxy 초기화
+        this.orderDate = order.getOrderDate();
         this.orderStatus = order.getStatus();
         this.dealStatus = order.getDeal().getStatus();  // Proxy 초기화
+        this.dealType = order.getDeal().getType();
+        this.address = order.getDeal().getAddress();
         // OrderItem 은 엔티티여서 안나옴 => Lazy 강제 초기화 필요 => Proxy 초기화
         // order.getOrderItems().stream().forEach(o -> o.getItem().getName());
         // this.orderItems = order.getOrderItems();

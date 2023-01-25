@@ -11,6 +11,7 @@ import mybook.mymarket.repository.RegisterSearch;
 import mybook.mymarket.repository.register.query.RegisterQueryDto;
 import mybook.mymarket.repository.register.query.RegisterQueryRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class RegisterApiController {
     private final RegisterQueryRepository registerQueryRepository;
 
     /**
-     * (등록)상품 조회
+     * 전체 (등록)상품 조회
      */
 
     /**
@@ -107,6 +108,38 @@ public class RegisterApiController {
      3. 그래도 안되면 DTO 로 직접 조회하는 방법을 사용(V4)
      4. 최후의 방법은 JPA 가 제공하는 네이티브 SQL 이나 SpringJDBCTemplate 을 사용해서 SQL 직접 사용
      */
+
+    /**
+     * 나의 (등록)상품 조회
+     */
+    @GetMapping("/api/v2/myRegisters/{id}")
+    public Result<List<RegisterDto>> myRegistersV2(@PathVariable("id") Long memberId) {
+        List<Register> myRegisters = registerRepository.findMyRegisters(memberId);
+
+        List<RegisterDto> result = myRegisters.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        return new Result<>(result.size(), result);
+    }
+
+    @GetMapping("/api/v3/myRegisters/{id}")
+    public Result<List<RegisterDto>> myRegistersV3(@PathVariable("id") Long memberId) {
+        List<Register> myRegisters = registerRepository.findMyRegisters_fetch(memberId);
+
+        List<RegisterDto> result = myRegisters.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        return new Result<>(result.size(), result);
+    }
+
+    @GetMapping("/api/v4/myRegisters/{id}")
+    public Result<List<RegisterQueryDto>> myRegistersV4(@PathVariable("id") Long memberId) {
+        List<RegisterQueryDto> myAllByDto = registerQueryRepository.findMyAllByDto(memberId);
+
+        return new Result<>(myAllByDto.size(), myAllByDto);
+    }
 
     @Data
     @AllArgsConstructor

@@ -79,7 +79,7 @@ public class OrderController {
     }
 
     /**
-     * 주문 목록 검색, 취소
+     * 전체 주문상품 조회 및 검색
      */
     @GetMapping("/orders")  // name 과 orderSearch 가 넘어오면 파라미터를 바인딩시킴
     // @ModelAttribute: model 박스에 자동으로 담긴다고 생각
@@ -100,6 +100,10 @@ public class OrderController {
         return "orders/orderList";   // 넘어온 파라미터를 바인딩 시킨 후 orderList 화면으로 넘김
     }
 
+    /**
+     * 나의 주문상품 조회
+     */
+
     @GetMapping("/myOrders")
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
 
@@ -111,6 +115,9 @@ public class OrderController {
         return "orders/myOrderList";
     }
 
+    /**
+     * 주문 - 거래 완료
+     */
 
     @PostMapping("/orders/{orderId}/complete")  // 거래 완료
     public String completeDeal(@PathVariable("orderId") Long orderId) {
@@ -118,6 +125,10 @@ public class OrderController {
 
         return "redirect:/orders";
     }
+
+    /**
+     * 주문 취소
+     */
 
     @PostMapping("/orders/{orderId}/cancel")   // 주문 취소
     public String cancelOrder(@PathVariable("orderId") Long orderId) {

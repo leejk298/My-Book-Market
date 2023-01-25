@@ -46,7 +46,7 @@ public class OrderQueryRepository {
     private List<OrderQueryDto> findOrders() {
         return em.createQuery(
                         "select new mybook.mymarket.repository.order.query." +
-                                "OrderQueryDto(o.id, m.nickName, o.orderDate, o.status, d.status, d.address) " +
+                                "OrderQueryDto(o.id, m.id, m.nickName, o.orderDate, o.status, d.status, d.address) " +
                                 "from Order o " +
                                 "join o.member m " +
                                 "join o.deal d", OrderQueryDto.class)
@@ -67,7 +67,7 @@ public class OrderQueryRepository {
         // => orderIds 에 대한 orderItems 들이 뽑혀져나옴
         List<OrderItemQueryDto> orderItems = em.createQuery(
                         "select new mybook.mymarket.repository.order.query." +
-                                "OrderItemQueryDto(oi.order.id, i.id, i.name, r.member.nickName, oi.orderPrice, oi.count) " +
+                                "OrderItemQueryDto(oi.order.id, r.member.id, i.id, i.name, r.member.nickName, oi.orderPrice, oi.count) " +
                                 "from OrderItem oi " +
                                 "join oi.item i " +
                                 "join i.register r " +

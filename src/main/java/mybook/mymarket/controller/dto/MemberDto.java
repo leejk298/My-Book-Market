@@ -32,6 +32,7 @@ public class MemberDto {
 
     public MemberDto(Member member) {   // 엔티티 -> DTO
         this.id = member.getId();
+        this.password = member.getPassword();
         this.nickName = member.getNickName();
         this.userName = member.getUserName();
         this.address = member.getAddress();

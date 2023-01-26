@@ -60,7 +60,7 @@
     function complete(id) {
         var form = document.createElement("form");
         form.setAttribute("method", "post");
-        form.setAttribute("action", "/orders/" + id + "/complete");
+        form.setAttribute("action", "/myOrders/" + id + "/complete");
         document.body.appendChild(form);
         form.submit();
     }
@@ -71,7 +71,7 @@
     function cancel(id) {
         var form = document.createElement("form");
         form.setAttribute("method", "post");
-        form.setAttribute("action", "/orders/" + id + "/cancel");
+        form.setAttribute("action", "/myOrders/" + id + "/cancel");
         document.body.appendChild(form);
         form.submit();
     }

@@ -24,17 +24,17 @@ public class LoginService {
         // 다양한 Optional 의 메서드를 통해 Null 이 발생했을 때 문제를 해결할 수 있다.
         Optional<Member> findMember = memberRepository.findByNickName(nickName);
         /**
-         * 1. findByEmail() 메서드를 통해 반환받은 Optional 클래스가 적용된 Member 개체가
+         * 1. findByNickName() 메서드를 통해 반환받은 Optional 클래스가 적용된 Member 객체가
          *    Null 이 아닌지 확인하기 위해 orElseThrow() 메서드를 적용한다.
-         * 2. 만약 Member 개체가 Null 이라면 사용자 정의 예외(NotCorrespondingEmailException)를 터뜨려준다.
-         *    Member 개체가 Null 이 아니라면 checkPassword() 메서드를 통해 고객으로부터 전달받은
+         * 2. 만약 Member 객체가 Null 이라면 사용자 정의 예외(NotCorrespondingEmailException)를 터뜨려준다.
+         *    Member 객체가 Null 이 아니라면 checkPassword() 메서드를 통해 고객으로부터 전달받은
          *    비밀번호(password)와 객체의 비밀번호가 일치하는지 확인한다.
          *  2 - 1. 일치하지 않는다면 IllegalStateException() 예외를 터뜨려준다.
-         *  2 - 2. 일치한다면 findByEmail() 메서드를 통해 반환받은 Member 개체를 반환해준다.
+         *  2 - 2. 일치한다면 findByNickName() 메서드를 통해 반환받은 findMember 객체를 반환해준다.
          */
-        if (!findMember.orElseThrow(() -> new NotCorrespondingEmailException("해당 이메일이 존재하지 않습니다."))
+        if (!findMember.orElseThrow(() -> new NotCorrespondingEmailException("해당 ID는 존재하지 않습니다."))
                 .checkPassword(password)) {
-            throw new IllegalStateException("이메일과 비밀번호가 일치하지 않습니다.");
+            throw new IllegalStateException("ID와 PW가 일치하지 않습니다.");
         }
 
         return findMember.get();

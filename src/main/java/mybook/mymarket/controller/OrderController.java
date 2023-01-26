@@ -101,9 +101,28 @@ public class OrderController {
     }
 
     /**
+     * 주문 - 거래 완료
+     */
+    @PostMapping("/orders/{orderId}/complete")  // 거래 완료
+    public String completeDeal(@PathVariable("orderId") Long orderId) {
+        orderService.completeDeal(orderId); // 해당 주문의 거래 정보 업데이트
+
+        return "redirect:/orders";
+    }
+
+    /**
+     * 주문 취소
+     */
+    @PostMapping("/orders/{orderId}/cancel")   // 주문 취소
+    public String cancelOrder(@PathVariable("orderId") Long orderId) {
+        orderService.cancelOrder(orderId);
+
+        return "redirect:/orders";
+    }
+
+    /**
      * 나의 주문상품 조회
      */
-
     @GetMapping("/myOrders")
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
 
@@ -115,26 +134,18 @@ public class OrderController {
         return "orders/myOrderList";
     }
 
-    /**
-     * 주문 - 거래 완료
-     */
+    @PostMapping("/myOrders/{orderId}/complete")
+    public String completeMyDeal(@PathVariable("orderId") Long orderId) {
+        orderService.completeDeal(orderId);
 
-    @PostMapping("/orders/{orderId}/complete")  // 거래 완료
-    public String completeDeal(@PathVariable("orderId") Long orderId) {
-        orderService.completeDeal(orderId); // 해당 주문의 거래 정보 업데이트
-
-        return "redirect:/orders";
+        return "redirect:/myOrders";
     }
 
-    /**
-     * 주문 취소
-     */
-
-    @PostMapping("/orders/{orderId}/cancel")   // 주문 취소
-    public String cancelOrder(@PathVariable("orderId") Long orderId) {
+    @PostMapping("/myOrders/{orderId}/cancel")
+    public String cancelMyOrder(@PathVariable("orderId") Long orderId) {
         orderService.cancelOrder(orderId);
 
-        return "redirect:/orders";
+        return "redirect:/myOrders";
     }
 
     private MemberDto getMemberDto(Member member) {

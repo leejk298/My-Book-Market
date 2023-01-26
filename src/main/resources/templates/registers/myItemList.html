@@ -37,7 +37,7 @@
                     <!-- 수정 -->
                     <th:block>
                         <div th:if="${register.memberId == memberId}">
-                            <a href="#" th:href="@{/registers/{id}/edit (id=${register.itemId})}"
+                            <a href="#" th:href="@{/myRegisters/{id}/edit (id=${register.itemId})}"
                                class="btn btn-outline-primary" role="button">UPDATE</a>
                         </div>
                     </th:block>
@@ -46,7 +46,7 @@
                     <!-- 취소 -->
                     <th:block>
                         <div th:if="${register.memberId == memberId}">
-                            <a href="#" th:href="@{/registers/{id}/cancel (id=${register.registerId})}"
+                            <a href="#" th:href="@{/myRegisters/{id}/cancel (id=${register.registerId})}"
                                th:if="${register.status.name() != 'CANCEL'}" class="btn btn-outline-danger"
                                role="button">CANCEL</a>
                         </div>

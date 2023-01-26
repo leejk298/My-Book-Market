@@ -105,7 +105,8 @@ public class OrderService {
          업데이트 쿼리가 전부 날라감 */
     }
 
-    /** 검색
+    /**
+     * 검색
      * Repository 에서 단순히 위임만 받으므로 굳이 서비스 계층을 안타도 됨
      */
     public List<Order> findOrders(OrderSearch orderSearch) {    // Where 절의 조건

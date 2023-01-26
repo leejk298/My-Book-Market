@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -72,7 +74,8 @@ public class MemberController {
 
     @PostMapping("/members/update")
     public String updateMember(@SessionAttribute(name = "memberId") Long memberId,
-                               @ModelAttribute("form") @Valid @NotNull MemberForm form, BindingResult result) {
+                               @ModelAttribute("form") @Valid @NotNull MemberForm form,
+                               BindingResult result, HttpServletRequest request) {
         // @ModelAttribute("form") : form 객체에 바인딩하기 위해
         // 영속 엔티티는 JPA 가 dirty checking 을 통해 변경이 일어나면
         // update 쿼리를 날려서 바꿔줌
@@ -114,6 +117,11 @@ public class MemberController {
          병합을 사용하면 모든 속성이 변경됨 => 값이 없으면 null 로 없데이트 할 위험도 있다.
          (병합은 모든 필드를 교체한다.) => 선택의 개념이 아님
          */
+
+        // 세션이 있으면 원래의 세션 반환, 없으면 신규 세션을 생성
+        HttpSession session = request.getSession();
+        // 세션에 로그인 정보 보관
+        session.setAttribute("nickName", memberDto.getNickName());
 
         return "redirect:/";
     }

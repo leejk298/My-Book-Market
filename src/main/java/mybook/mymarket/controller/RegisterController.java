@@ -63,7 +63,7 @@ public class RegisterController {   // Controller 가 Service 갖다씀
     }
 
     /**
-     * 상품 조회
+     * 전체 (등록)상품 조회
      */
     @GetMapping("/registers")
     public String list(@SessionAttribute(name = "memberId") Long memberId,
@@ -81,20 +81,6 @@ public class RegisterController {   // Controller 가 Service 갖다씀
         model.addAttribute("registers", registerDtoList);
 
         return "registers/itemList";
-    }
-    @GetMapping("/myRegisters")
-    public String myList(@SessionAttribute(name = "memberId") Long memberId, Model model) {
-
-        List<Register> registers = registerService.findMyRegisters(memberId);
-
-        List<RegisterDto> registerDtoList = registers.stream()
-                .map(r -> new RegisterDto(r))
-                .collect(Collectors.toList());
-
-        model.addAttribute("memberId", memberId);
-        model.addAttribute("registers", registerDtoList);
-
-        return "registers/myItemList";
     }
 
     /**
@@ -132,6 +118,56 @@ public class RegisterController {   // Controller 가 Service 갖다씀
         registerService.cancelRegister(registerId);
 
         return "redirect:/registers";
+    }
+
+    /**
+     * 나의 (등록)상품 조회
+     */
+
+    @GetMapping("/myRegisters")
+    public String myList(@SessionAttribute(name = "memberId") Long memberId, Model model) {
+
+        List<Register> registers = registerService.findMyRegisters(memberId);
+
+        List<RegisterDto> registerDtoList = registers.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        model.addAttribute("memberId", memberId);
+        model.addAttribute("registers", registerDtoList);
+
+        return "registers/myItemList";
+    }
+
+    @GetMapping("myRegisters/{itemId}/edit")
+    public String updateMyRegisterItemForm(@PathVariable("itemId") Long itemId, Model model) {
+        Item item = itemService.findOne(itemId);    // 엔티티 조회
+
+        ItemDto itemDto = getItemDto(item);     //  엔티티 -> DTO
+        ItemForm form = createItemForm(itemDto);   // DTO -> Form, 원래 정보 가져오기
+
+        // model 에 key 가 form 인 데이터 form 을 담는다
+        model.addAttribute("form", form);   // 이전 등록 form
+
+        return "registers/updateItemForm";
+    }
+
+    @PostMapping("myRegisters/{itemId}/edit")
+    public String updateMyItem(@PathVariable("itemId") Long itemId, @ModelAttribute("form")
+    @NotNull ItemForm form) {
+
+        registerService.findOneByItem(itemId, form.getStockQuantity()); // 수정 시 외래키(itemId) 이용
+
+        itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
+
+        return "redirect:/myRegisters";
+    }
+
+    @GetMapping("myRegisters/{registerId}/cancel")
+    public String cancelMyItem(@PathVariable("registerId") Long registerId) {
+        registerService.cancelRegister(registerId);
+
+        return "redirect:/myRegisters";
     }
 
     private MemberDto getMemberNameDto(Member member) { // 엔티티 -> DTO

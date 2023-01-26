@@ -41,7 +41,7 @@ public class MemberService {
         Member member = new Member(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
         memberRepository.save(member);
 
-        return memberDto.getId();
+        return member.getId();
     }
 
     private void validateDuplicateMember(String nickName) {   // 중복 검사

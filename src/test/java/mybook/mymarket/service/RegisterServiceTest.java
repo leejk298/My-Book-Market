@@ -8,8 +8,6 @@ import mybook.mymarket.domain.RegisterStatus;
 import mybook.mymarket.domain.item.Magazine;
 import mybook.mymarket.domain.item.Novel;
 import mybook.mymarket.exception.NotEnoughStockException;
-import mybook.mymarket.repository.ItemRepository;
-import mybook.mymarket.repository.MemberRepository;
 import mybook.mymarket.repository.RegisterRepository;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,16 +41,20 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품등록() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
 
+        // 상품 세팅
         String type = "Novel";  // 타입: 라디오 버튼으로 받아옴
         int price = 10000, stockQuantity = 10;
         Novel novel = createNovel(price, stockQuantity); // item 세팅 아직 영속 X
         ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
-        // when
+
+        // when: 상품 등록
         Long registerId = registerService.register(member.getId(), itemDto, type, stockQuantity);   // item 영속 O
+        System.out.println("registerId = " + registerId);
 
         // then
         Register register = registerRepository.findOne(registerId); // 검증 대상
@@ -70,17 +72,19 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품등록_같은회원_다른상품() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
 
+        // 상품 등록1
         String type = "Novel";  // 타입
         int price = 10000, stockQuantity = 10, updateStockQuantity = 5;
         Novel novel = createNovel(price, stockQuantity); // item 1 세팅 아직 영속 X
         ItemDto itemDto1 = new ItemDto(novel);   // 엔티티 -> Dto
         Long registerId1 = registerService.register(member.getId(), itemDto1, type, stockQuantity);// item 1 영속 O
 
-        // when
+        // when: 상품 등록2
         Magazine magazine = createMagazine(price, updateStockQuantity);
         ItemDto itemDto2 = new ItemDto(magazine); // item 2
         Long registerId2 = registerService.register(member.getId(), itemDto2, type, updateStockQuantity);// item 2 영속 -> 같은회원, 다른상품
@@ -92,7 +96,6 @@ public class RegisterServiceTest {
         assertEquals("상품 등록한 회원 이름", register1.getMember().getNickName(), register2.getMember().getNickName()); // 같은 회원
         assertThat(!register1.getItem().getName().equals(register2.getItem().getName()));    // 다른 상품
         assertThat(!register1.getId().equals(register2.getId()));    // 다른 등록
-
     }
 
     /**
@@ -100,17 +103,19 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품등록_다른회원_같은상품() throws Exception {
-        // given
-        Member member1 = createMember("testMember1"); // member1 세팅
+        // given: 회원, 상품 세팅
+        // 등록회원1
+        Member member1 = createMember("testMember"); // member 세팅
         em.persist(member1); // 영속 O
 
+        // 상품 등록
         String type = "Novel";  // 타입
         int price = 10000, stockQuantity = 10;
         Novel novel = createNovel(price, stockQuantity); // item 1 세팅 아직 영속 X
         ItemDto itemDto1 = new ItemDto(novel);   // 엔티티 -> Dto
         Long registerId1 = registerService.register(member1.getId(), itemDto1, type, stockQuantity);// item 1 영속 O
 
-        // when
+        // when: 등록회원2
         Member member2 = createMember("testMember2"); // member2 세팅
         em.persist(member2); // 영속 O
         ItemDto itemDto2 = new ItemDto(novel); // 같은상품
@@ -130,17 +135,19 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품등록_같은회원_같은상품() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원1
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
 
+        // 상품 등록
         String type = "Novel";  // 타입
         int price = 10000, stockQuantity = 10, updateStockQuantity = 5;
         Novel novel1 = createNovel(price, stockQuantity); // item 1 세팅 아직 영속 X
         ItemDto itemDto1 = new ItemDto(novel1);   // 엔티티 -> Dto
         registerService.register(member.getId(), itemDto1, type, stockQuantity);   // item 1 영속 O
 
-        // when
+        // when: 같은 상품 등록
         Novel novel2 = createNovel(price, updateStockQuantity);
         ItemDto itemDto2 = new ItemDto(novel2); // item 2
         Long registerId = registerService.register(member.getId(), itemDto2, type, updateStockQuantity);// item 2 영속 -> 같은회원, 같은상품
@@ -159,9 +166,12 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품취소() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원1
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
+
+        // 상품 등록
         String type = "Novel";
         int price = 10000, stockQuantity = 10;
         Novel novel = createNovel(price, stockQuantity); // item 세팅 아직 영속 X
@@ -184,17 +194,20 @@ public class RegisterServiceTest {
      */
     @Test
     public void 상품수정() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원1
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
+
+        // 상품 등록
         String type = "Novel";
         int price = 10000, stockQuantity = 10;
         Novel novel = createNovel(price, stockQuantity); // item 세팅 아직 영속 X
         ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
         Long registerId = registerService.register(member.getId(), itemDto, type, stockQuantity);// item 영속 O
-
-        // when
         Register register = registerService.findOne(registerId);
+
+        // when: 상품 수정
         String updateName = "testNovel";
         int updatePrice = 5000, updateStockQuantity = 0;
         registerService.findOneByItem(register.getItem().getId(), updateStockQuantity);  // 재고 0 => 등록 상태 업데이트
@@ -209,17 +222,20 @@ public class RegisterServiceTest {
 
     @Test(expected = NotEnoughStockException.class)
     public void 상품수정_재고예외() throws Exception {
-        // given
+        // given: 회원, 상품 세팅
+        // 등록회원1
         Member member = createMember("testMember"); // member 세팅
         em.persist(member); // 영속 O
+
+        // 상품 등록
         String type = "Novel";
         int price = 10000, stockQuantity = 10;
         Novel novel = createNovel(price, stockQuantity); // item 세팅 아직 영속 X
         ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
         Long registerId = registerService.register(member.getId(), itemDto, type, stockQuantity);// item 영속 O
-
-        // when
         Register register = registerService.findOne(registerId);
+
+        // when: 상품 수정
         String updateName = "testNovel";
         int updatePrice = 5000, updateStockQuantity = -1;   // 수량은 음수 X => 예외 발생
         registerService.findOneByItem(register.getItem().getId(), updateStockQuantity);  // "need more stock"

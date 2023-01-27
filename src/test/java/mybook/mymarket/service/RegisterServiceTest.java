@@ -7,7 +7,6 @@ import mybook.mymarket.domain.Register;
 import mybook.mymarket.domain.RegisterStatus;
 import mybook.mymarket.domain.item.Magazine;
 import mybook.mymarket.domain.item.Novel;
-import mybook.mymarket.exception.NotEnoughStockException;
 import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.MemberRepository;
 import mybook.mymarket.repository.RegisterRepository;
@@ -29,8 +28,14 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)    // 스프링 컨테이너 안에서 실행
 @Transactional      // 데이터 변겅이 일어나므로, 롤백시키기 위해
 public class RegisterServiceTest {
+    @Autowired  // 스프링이 스프링 빈에 있는 memberRepository 를 주입해줌
+    MemberRepository memberRepository;
+    @Autowired
+    MemberService memberService;
     @Autowired
     ItemService itemService;
+    @Autowired
+    ItemRepository itemRepository;
     @Autowired
     RegisterService registerService;
     @Autowired
@@ -53,11 +58,12 @@ public class RegisterServiceTest {
         ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
         // when
         Long registerId = registerService.register(member.getId(), itemDto, type, stockQuantity);   // item 영속 O
+        System.out.println("registerId = " + registerId);
 
         // then
         Register register = registerRepository.findOne(registerId); // 검증 대상
 
-        assertEquals("상품 등록 시 상태는 REGISTER", RegisterStatus.REGISTER, register.getStatus());
+        assertEquals("상품 등록시 상태는 REGISTER", RegisterStatus.REGISTER, register.getStatus());
         assertEquals("상품 등록한 회원 이름", member.getNickName(), register.getMember().getNickName());
         assertEquals("등록된 상품 이름", novel.getName(), register.getItem().getName());
         assertEquals("등록된 상품 가격", price, register.getItem().getPrice());
@@ -207,7 +213,7 @@ public class RegisterServiceTest {
         assertEquals("재고가 0이면 등록 상태는 CANCEL", RegisterStatus.CANCEL, register.getStatus());
     }
 
-    @Test(expected = NotEnoughStockException.class)
+    @Test(expected = IllegalStateException.class)
     public void 상품수정_재고예외() throws Exception {
         // given
         Member member = createMember("testMember"); // member 세팅

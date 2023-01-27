@@ -5,11 +5,16 @@ import mybook.mymarket.controller.form.MemberForm;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 
+import javax.validation.constraints.NotEmpty;
+
 @Getter
 public class MemberDto {
     private Long id;
+    @NotEmpty
     private String nickName;
+    @NotEmpty
     private String password;
+    @NotEmpty
     private String userName;
     private Address address;
 

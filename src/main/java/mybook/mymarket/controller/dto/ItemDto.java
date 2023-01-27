@@ -26,11 +26,11 @@ public class ItemDto {
 
     // Form -> DTO
     public ItemDto(ItemForm form) { // 파라미터 생성자
-        id = form.getId();
         name = form.getName();
         author = form.getAuthor();
         price = form.getPrice();
         stockQuantity = form.getStockQuantity();
+        type = ItemTypeDto.valueOf(form.getItemTypeForm().name());
         etc = form.getEtc();
     }
 

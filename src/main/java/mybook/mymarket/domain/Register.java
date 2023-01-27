@@ -23,7 +23,8 @@ public class Register {
     @JoinColumn(name = "member_id") // 외래키 매핑
     private Member member;  // 연관관계의 주인(Register.member) => 외래키 갖고있는 N 쪽
 
-    @OneToOne(mappedBy = "register", cascade = CascadeType.ALL)
+    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_id")
     private Item item; // 읽기전용, Item.register 에 의해 매핑됨
     // cascade: register 만 persist 해도 item 이 같이 따라옴, delete 도 마찬가지
 

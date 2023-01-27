@@ -176,7 +176,6 @@ public class RegisterController {   // Controller 가 Service 갖다씀
 
     private static ItemForm createItemForm(ItemDto item) {      // DTO(데이터전송객체) -> Form (화면 종속적)
         ItemForm form = new ItemForm();
-        form.setId(item.getId());
         form.setName(item.getName());
         form.setAuthor(item.getAuthor());
         form.setPrice(item.getPrice());

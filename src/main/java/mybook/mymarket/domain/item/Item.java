@@ -19,9 +19,8 @@ public abstract class Item {
     @Column(name = "item_id")
     private Long id;
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "register_id")   // 외래키 매핑
-    private Register register;  // 연관관계의 주인(Item.register)
+    @OneToOne(mappedBy = "item", fetch = LAZY)
+    private Register register;
 
     private String name;
 

@@ -62,11 +62,16 @@ public class RegisterService {
      */
     @Transactional
     public Long register(Long memberId, ItemDto itemDto, String type, int count) {
+        // 등록 수량 <= 0 이면 NotEnoughStockException("need more stock") 발생
+        if (count <= 0) {
+            throw new NotEnoughStockException("need more stock");
+        }
+
         // 엔티티 조회
         Member member = memberRepository.findOne(memberId); // 로그인 id
 
         // Novel
-        if (ItemTypeDto.Novel.name().equals(type)) {
+        if (type.equals("Novel")) {
             itemDto.setType(ItemTypeDto.Novel);   // 상품 분류 세팅
             Novel novel = createNovel(itemDto);    // 객체 생성 및 세팅
             // 해당 id로 같은 상품을 등록했는지 체크
@@ -81,7 +86,7 @@ public class RegisterService {
             }
         }
         // Magazine
-        else if (ItemTypeDto.Magazine.name().equals(type)) {
+        else if (type.equals("Magazine")) {
             itemDto.setType(ItemTypeDto.Magazine);
             Magazine magazine = createMagazine(itemDto);
             Optional<Item> findItem = itemRepository.findByMemberAndItem(memberId, magazine.getName());

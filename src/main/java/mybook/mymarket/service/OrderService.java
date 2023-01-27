@@ -42,7 +42,7 @@ public class OrderService {
          */
         // 거래정보 생성
         Deal deal = new Deal();
-        if (DealType.DELIVERY.toString().equals(type)) {    // 거래 형태가 배송인 경우
+        if (DealType.DELIVERY.name().equals(type)) {    // 거래 형태가 배송인 경우
             deal.setAddress(member.getAddress());   // 거래 주소를 주문 회원의 주소로 설정
             deal.setType(DealType.DELIVERY);       // 거래 형태 세팅
         } else {    // 거래 형태가 직거래인 경우

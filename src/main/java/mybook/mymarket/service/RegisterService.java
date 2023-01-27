@@ -10,6 +10,7 @@ import mybook.mymarket.domain.item.Item;
 import mybook.mymarket.domain.item.Magazine;
 import mybook.mymarket.domain.item.Novel;
 import mybook.mymarket.domain.item.Reference;
+import mybook.mymarket.exception.NotEnoughStockException;
 import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.MemberRepository;
 import mybook.mymarket.repository.RegisterRepository;
@@ -47,7 +48,7 @@ public class RegisterService {
         } else if (count > 0) { // 수량이 0보다 크면 REGISTER, 0 -> ? 포함
             register.setStatus(RegisterStatus.REGISTER);
         } else {    // 0보다 작으면 오류
-            throw new IllegalStateException("need more stock");
+            throw new NotEnoughStockException("need more stock");
         }
     }
 

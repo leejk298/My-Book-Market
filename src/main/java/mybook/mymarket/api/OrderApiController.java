@@ -41,7 +41,7 @@ public class OrderApiController {
     }
 
     /**
-     * 상품 취소
+     * 주문 취소
      */
     @GetMapping("/api/orders/cancel/{id}")
     public ResponseData<OrderDto> cancelOrder(@PathVariable("id") Long orderId) {

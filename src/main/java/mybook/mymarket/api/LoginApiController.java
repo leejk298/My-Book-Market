@@ -24,14 +24,18 @@ public class LoginApiController {
      */
     @PostMapping("/api/login")
     public LoginMemberResponse loginMember(@RequestBody @Valid LoginForm loginForm) {
+        // @Valid: MemberForm 에 있는 @NotEmpty 를 읽어서 Validation 기능을 수행하게됨
         Member loginMember = loginService.login(loginForm.getNickName(), loginForm.getPassword());
 
-        return new LoginMemberResponse(loginMember.getId());
+        // 등록하여 반환된 필드 값들을 Json 형식으로 보여줌
+        // @AllArgsConstructor: 모든 파라미터를 담는 생성자
+        return new LoginMemberResponse(loginMember.getId(), loginMember.getNickName());
     }
 
     @Data
     @AllArgsConstructor
     static class LoginMemberResponse {  // 응답 값
-        private Long id;    // 로그인하게 되면 id값 리턴되게
+        private Long id;    // 로그인하게 되면 id
+        private String nickName;    // 닉네임 리턴
     }
 }

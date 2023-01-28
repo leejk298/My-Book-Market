@@ -2,17 +2,13 @@ package mybook.mymarket.repository;
 
 
 import lombok.RequiredArgsConstructor;
-import mybook.mymarket.domain.Member;
-import mybook.mymarket.domain.Order;
 import mybook.mymarket.domain.Register;
-import mybook.mymarket.domain.item.Item;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.util.List;
-import java.util.Optional;
 
 @Repository // 스프링빈에 등록
 @RequiredArgsConstructor    // final 키워드의 필드(em)를 가지고 생성자 만들어줌
@@ -21,7 +17,21 @@ public class RegisterRepository {
     private final EntityManager em;
     // @RequiredArgsConstructor => 생성자를 통해 엔티티매니저를 주입받게됨
 
-    public List<Register> findAllByString(RegisterSearch registerSearch) {
+    public void save(Register register) {   // 등록 저장 -> 상품 저장, Cascade
+        em.persist(register);
+    }
+
+    public Register findOne(Long id) {      // 등록 찾기
+        return em.find(Register.class, id);
+    }
+
+    public List<Register> findAllByRegister() { // 모든 아이템과 주문한 회원을 가져오기 위해
+        return em.createQuery("select r from Register r " +
+                        "join r.item i join r.member m", Register.class)
+                .getResultList();
+    }
+
+    public List<Register> findAllByString(RegisterSearch registerSearch) {  // where 절 조건에 맞는 등록 정보 가져오기
         // 등록 - (등록)상품, (등록)회원 => join
         String jpql = "select r from Register r join r.member m join r.item i";
         boolean isFirstCondition = true;
@@ -77,25 +87,21 @@ public class RegisterRepository {
         return query.getResultList();
     }
 
-    public List<Register> findAllByRegister() { // 모든 아이템과 주문한 회원을 가져오기 위해
-        return em.createQuery("select r from Register r " +
-                "join r.item i join r.member m", Register.class)
-                .getResultList();
-    }
-
-    public void save(Register register) {   // 등록 저장 -> 상품 저장, Cascade
-        em.persist(register);
-    }
-
-    public Register findOne(Long id) {      // 등록 찾기
-        return em.find(Register.class, id);
-    }
-
     public Register findOneByItem(Long id) { // 등록상품으로 해당 등록 가져오기
         return em.createQuery("select r from Register r join r.item i " +
                 "where i.id = :id", Register.class)
                 .setParameter("id", id)
                 .getSingleResult();
+    }
+
+    public List<Register> findMyRegisters(Long memberId) {  // 회원으로 해당 등록 가져오기
+        return em.createQuery(
+                        "select r from Register r " +
+                                "join r.member m " +
+                                "join r.item i " +
+                                "where m.id = :memberId", Register.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
     }
 
     /**
@@ -113,16 +119,6 @@ public class RegisterRepository {
                         "join fetch r.item i", Register.class)
                 .getResultList();
         // SQL 에는 fetch 라는 말이 없음 => JPA 에서 나온 것
-    }
-
-    public List<Register> findMyRegisters(Long memberId) {
-        return em.createQuery(
-                "select r from Register r " +
-                        "join r.member m " +
-                        "join r.item i " +
-                        "where m.id = :memberId", Register.class)
-                .setParameter("memberId", memberId)
-                .getResultList();
     }
 
     public List<Register> findMyRegisters_fetch(Long memberId) {

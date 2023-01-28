@@ -4,7 +4,6 @@ package mybook.mymarket.api;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import mybook.mymarket.controller.dto.ItemDto;
 import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.controller.form.ItemForm;
 import mybook.mymarket.domain.Register;
@@ -13,6 +12,7 @@ import mybook.mymarket.repository.RegisterSearch;
 import mybook.mymarket.repository.register.query.RegisterQueryDto;
 import mybook.mymarket.repository.register.query.RegisterQueryRepository;
 import mybook.mymarket.service.ItemService;
+import mybook.mymarket.service.RegisterItemDto;
 import mybook.mymarket.service.RegisterService;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,46 +36,58 @@ public class RegisterApiController {
     @PostMapping("/api/register/{id}")  // id를 pathVariable 로 가져옴
     public ResponseData<RegisterDto> createRegister(@PathVariable("id") Long memberId,
                                                     @RequestBody @Valid ItemForm form) {
-
-        ItemDto itemDto = new ItemDto(form);
+        // 화면 form -> Dto
+        RegisterItemDto itemDto = new RegisterItemDto(form);
         // 등록 수량 <= 0 이면 NotEnoughStockException("need more stock") 발생
-        Long registerId = registerService.register(memberId, itemDto, form.getItemTypeForm().name(), form.getStockQuantity());
+        Long registerId = registerService.register(memberId, itemDto);
 
-        Register register = registerRepository.findOne(registerId);
-        RegisterDto registerDto = new RegisterDto(register);
+        // Json 데이터를 보여주기 위한 로직
+        Register register = registerRepository.findOne(registerId); // 단권 조회
+        RegisterDto registerDto = new RegisterDto(register);    // 엔티티 -> Dto
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(registerDto);
     }
 
     /**
      * 상품 수정
+     * PUT 은 전체 업데이트를 할 때
+     * 부분 업데이트를 하려면 PATCH 를 사용하거나 POST 를 사용하는 것이 REST 스타일에 맞다
      */
-    @PostMapping("/api/registers/{id}/edit")
+    @PostMapping("/api/registers/edit/{id}")
     public ResponseData<RegisterDto> updateRegisterItem(@PathVariable("id") Long itemId,
                                                         @RequestBody @Valid ItemForm form) {
         // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
         // 수량은 음수 X => NotEnoughStockException("need more stock") 발생
+        /** 커맨드와 쿼리를 분리하자 */
+        // 커맨드: update 같은 변경성 메소드는 void 로 끝내거나 id값 정도만 반환함(찾기 위해)
         registerService.findOneByItem(itemId, form.getStockQuantity()); // 수량에 따라 등록 상태 업데이트
         itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());   // 변경감지
 
+        // 쿼리: 그 후에 별도로 쿼리를 짠다
+        // Json 데이터를 보여주기 위한 로직
         Register register = registerRepository.findOneByItem(itemId);
         RegisterDto registerDto = new RegisterDto(register);
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(registerDto);
     }
 
     /**
      * 등록 취소
      */
-    @GetMapping("/api/registers/{id}/cancel")
+    @GetMapping("/api/registers/cancel/{id}")
     public ResponseData<RegisterDto> cancelRegisterItem(@PathVariable("id") Long registerId) {
         // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
         registerService.cancelRegister(registerId);
         // 등록을 취소하게 되면 상품 재고가 0, 등록 상태는 CANCEL
         // 등록 상태가 CANCEL 이면 주문 불가
+
+        // Json 데이터를 보여주기 위한 로직
         Register register = registerService.findOne(registerId);
         RegisterDto registerDto = new RegisterDto(register);
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(registerDto);
     }
 
@@ -198,14 +210,14 @@ public class RegisterApiController {
 
     @Data
     @AllArgsConstructor
-    static class Result<T> {
-        private int count;
+    static class ResponseData<T> {
         private T data;
     }
 
     @Data
     @AllArgsConstructor
-    static class ResponseData<T> {
+    static class Result<T> {
+        private int count;
         private T data;
     }
 }

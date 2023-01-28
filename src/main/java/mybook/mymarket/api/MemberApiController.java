@@ -45,10 +45,22 @@ public class MemberApiController {
         // Member 엔티티는 파라미터로 무슨 값이 들어올 지 모르는데
         // Dto 로 받으면 스펙을 보고 무슨 값이 들어오는 지 알 수 있고, validation 도 자유롭게 가능함
         // 표현 계층과 엔티티 분리하게 됨 => 유지보수, 관리가 편함
-
         Long id = memberService.join(memberDto);   // 회원 등록
 
-        return new CreateMemberResponse(id);    // 등록하여 반환된 id를 Json 형식으로 보여줌
+        Member joinMember = memberService.findOne(id);
+        MemberDto joinMemberDto = new MemberDto(joinMember);
+
+        // 등록하여 반환된 id를 Json 형식으로 보여줌
+        return new CreateMemberResponse(id, joinMemberDto.getNickName(), joinMemberDto.getUserName(), joinMemberDto.getAddress());
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class CreateMemberResponse { // 응답 값
+        private Long id;    // 회원이 등록(saveMember)되면 id (PK)
+        private String nickName;    // id
+        private String userName;    // name
+        private Address address;    // 주소 리턴되게
     }
 
     /**
@@ -62,14 +74,27 @@ public class MemberApiController {
     public UpdateMemberResponse updateMember(@PathVariable("id") Long id,
                                              @RequestBody @Valid MemberDto memberDto) {
         // PathVariable 로 id 와 memberDto 의 name 과 address 가 넘어옴
+
         /** 커맨드와 쿼리를 분리하자 */
         // 커맨드: update 같은 변경성 메소드는 void 로 끝내거나 id값 정도만 반환함(찾기 위해)
         memberService.updateMember(id, memberDto);
+
         // 쿼리: 그 후에 별도로 쿼리를 짠다
         Member findMember = memberService.findOne(id);
+        MemberDto updateMemberDto = new MemberDto(findMember);
+
         // 등록하여 반환된 필드 값들을 Json 형식으로 보여줌
         // @AllArgsConstructor 를 썼기때문에 모든 파라미터를 담는 생성자 필요
-        return new UpdateMemberResponse(findMember.getId(), findMember.getNickName(), findMember.getUserName(), findMember.getAddress());
+        return new UpdateMemberResponse(updateMemberDto.getId(), updateMemberDto.getNickName(), updateMemberDto.getUserName(), updateMemberDto.getAddress());
+    }
+
+    @Data
+    @AllArgsConstructor // 필드 값을 전부 포함하는 생성자를 만들어줌
+    static class UpdateMemberResponse {
+        private Long id;
+        private String nickName;
+        private String userName;
+        private Address address;
     }
 
     /**
@@ -93,33 +118,10 @@ public class MemberApiController {
         return new Result(MemberListDto.size(), MemberListDto);
     }
 
-
     // 안에서만 사용할 것이므로 내부클래스(Inner Class)로
     @Data
     @AllArgsConstructor
-    static class CreateMemberResponse { // 응답 값
-        private Long id;    // 회원이 등록(saveMember)되면 id값 리턴되게
-    }
-
-    private static Member createMember(MemberDto memberDto) {
-        Member member = new Member(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());   // 엔티티 객체 생성
-        // 파라미터랑 엔티티를 컨트롤러에서 매핑시켜줌
-
-        return member;
-    }
-
-    @Data
-    @AllArgsConstructor
     static class ListMemberResponse {
-        private Long id;
-        private String nickName;
-        private String userName;
-        private Address address;
-    }
-
-    @Data
-    @AllArgsConstructor // 필드 값을 전부 포함하는 생성자를 만들어줌
-    static class UpdateMemberResponse {
         private Long id;
         private String nickName;
         private String userName;

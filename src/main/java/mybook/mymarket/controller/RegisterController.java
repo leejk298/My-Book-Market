@@ -4,15 +4,12 @@ package mybook.mymarket.controller;
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.form.ItemForm;
 import mybook.mymarket.controller.form.ItemTypeForm;
-import mybook.mymarket.domain.Member;
 import mybook.mymarket.domain.Register;
-import mybook.mymarket.controller.dto.ItemDto;
-import mybook.mymarket.controller.dto.MemberDto;
 import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.domain.item.Item;
 import mybook.mymarket.repository.RegisterSearch;
 import mybook.mymarket.service.ItemService;
-import mybook.mymarket.service.MemberService;
+import mybook.mymarket.service.RegisterItemDto;
 import mybook.mymarket.service.RegisterService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,39 +22,37 @@ import java.util.stream.Collectors;
 @Controller // 스프링빈에 등록
 @RequiredArgsConstructor    // final 키워드를 가진 필드로 생성자를 만들어줌
 public class RegisterController {   // Controller 가 Service 갖다씀
-
     // 등록하기 위해서 회원, 상품 등의 dependency 가 필요함 => 주입
     private final RegisterService registerService;
     private final ItemService itemService;
-    private final MemberService memberService;
 
     /**
      * 상품 등록
      */
     @GetMapping("/register")
-    public String createForm(@SessionAttribute(name = "memberId")Long memberId,  Model model) {
-        Member member = memberService.findOne(memberId);    // 엔티티 조회 (로그인, 세션)
-        MemberDto memberDto = getMemberNameDto(member);     // 엔티티, 회원 이름만 넘김
-
+    public String createForm(Model model) {
+        // Model: Controller 에서 View 로 넘어갈 때 데이터를 Model 에 실어서 넘김
         model.addAttribute("itemTypeForm", itemTypeForms());    // 상품 분류
-        model.addAttribute("member", memberDto);   // 등록할 회원 == 세션(로그인)
         model.addAttribute("form", new ItemForm()); // 등록 상품
+        // 화면을 이동할 때 loginForm 이라는 빈 껍데기 객체를 가져감
+        // 이유: 빈 화면이니까 아무것도 없을 수도 있지만, validation 등을 해줄 수 있기 때문에
 
         return "registers/createItemForm";
     }
 
     @ModelAttribute("itemTypeForm")
-    public ItemTypeForm[] itemTypeForms() {
-        return ItemTypeForm.values();
+    public ItemTypeForm[] itemTypeForms() { // 라디오버튼
+        return ItemTypeForm.values();   // 값 가져옴
     }
 
     @PostMapping("/register")
-    public String create(@SessionAttribute(name = "memberId") Long memberId,
-                         ItemTypeForm itemTypeForm, ItemForm form) {
-
-        // form -> Dto
-        ItemDto itemDto = getItemDto(form);
-        registerService.register(memberId, itemDto, itemTypeForm.name(), form.getStockQuantity());
+    public String create(@SessionAttribute(name = "memberId") Long memberId, ItemForm form) {
+        // 파라미터로 넘기면 아무래도 재사용성은 좋음
+        // DTO 를 넘기면 편하지만, 해당 엔티티가 DTO 에 의존하게 됨
+        // => Service 계층에서 Controller 계층을 참조하게됨 => service 게층용 Dto 생성
+        // 그래도 파라미터가 너무 많으면 dto 를 만드는 것을 고려하는 것이 좋다
+        RegisterItemDto registerItemDto = createRegisterItemDto(form);  // form -> service 계층 Dto
+        registerService.register(memberId, registerItemDto);    // Dto 넘겨줌
 
         return "redirect:/";
     }
@@ -71,7 +66,6 @@ public class RegisterController {   // Controller 가 Service 갖다씀
                        Model model) {
         // Where 절 검색될 조건들을 포함하는 Register 엔티티 리스트
         List<Register> registers = registerService.findRegistersSearch(registerSearch);
-
         // 엔티티 리스트 -> DTO 리스트
         List<RegisterDto> registerDtoList = registers.stream()
                 .map(r -> new RegisterDto(r))
@@ -88,11 +82,10 @@ public class RegisterController {   // Controller 가 Service 갖다씀
      */
     @GetMapping("registers/{itemId}/edit")
     public String updateRegisterItemForm(@PathVariable("itemId") Long itemId, Model model) {
-        Item item = itemService.findOne(itemId);    // 엔티티 조회
-
-        ItemDto itemDto = getItemDto(item);     //  엔티티 -> DTO
-        ItemForm form = createItemForm(itemDto);   // DTO -> Form, 원래 정보 가져오기
-
+        // 엔티티 조회
+        Item item = itemService.findOne(itemId);
+        // 엔티티 -> Form, 원래 정보 가져오기
+        ItemForm form = createItemForm(item);
         // model 에 key 가 form 인 데이터 form 을 담는다
         model.addAttribute("form", form);   // 이전 등록 form
 
@@ -102,9 +95,9 @@ public class RegisterController {   // Controller 가 Service 갖다씀
     @PostMapping("registers/{itemId}/edit")
     public String updateItem(@PathVariable("itemId") Long itemId, @ModelAttribute("form")
     @NotNull ItemForm form) {
-
-        registerService.findOneByItem(itemId, form.getStockQuantity()); // 수정 시 외래키(itemId) 이용
-
+        // 수량에 따라 등록 상태 업데이트 필요
+        registerService.findOneByItem(itemId, form.getStockQuantity()); // 수정 시 외래키(item_id) 이용
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔 => 변경감지
         itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
 
         return "redirect:/registers";
@@ -115,6 +108,7 @@ public class RegisterController {   // Controller 가 Service 갖다씀
      */
     @GetMapping("registers/{registerId}/cancel")
     public String cancelItem(@PathVariable("registerId") Long registerId) {
+        // 컨트롤러에서는 값만 넘김 => 서비스 계층에서 데이터 변경 => 상품 재고 업데이트(변경감지)
         registerService.cancelRegister(registerId);
 
         return "redirect:/registers";
@@ -123,12 +117,11 @@ public class RegisterController {   // Controller 가 Service 갖다씀
     /**
      * 나의 (등록)상품 조회
      */
-
     @GetMapping("/myRegisters")
     public String myList(@SessionAttribute(name = "memberId") Long memberId, Model model) {
-
+        // 엔티티 List
         List<Register> registers = registerService.findMyRegisters(memberId);
-
+        // 엔티티 List -> Dto List
         List<RegisterDto> registerDtoList = registers.stream()
                 .map(r -> new RegisterDto(r))
                 .collect(Collectors.toList());
@@ -139,13 +132,15 @@ public class RegisterController {   // Controller 가 Service 갖다씀
         return "registers/myItemList";
     }
 
+    /**
+     * 나의 (등록)상품 수정
+     */
     @GetMapping("myRegisters/{itemId}/edit")
     public String updateMyRegisterItemForm(@PathVariable("itemId") Long itemId, Model model) {
-        Item item = itemService.findOne(itemId);    // 엔티티 조회
-
-        ItemDto itemDto = getItemDto(item);     //  엔티티 -> DTO
-        ItemForm form = createItemForm(itemDto);   // DTO -> Form, 원래 정보 가져오기
-
+        // 엔티티 조회
+        Item item = itemService.findOne(itemId);
+        // 엔티티 -> Form, 원래 정보 가져오기
+        ItemForm form = createItemForm(item);
         // model 에 key 가 form 인 데이터 form 을 담는다
         model.addAttribute("form", form);   // 이전 등록 form
 
@@ -155,26 +150,26 @@ public class RegisterController {   // Controller 가 Service 갖다씀
     @PostMapping("myRegisters/{itemId}/edit")
     public String updateMyItem(@PathVariable("itemId") Long itemId, @ModelAttribute("form")
     @NotNull ItemForm form) {
-
+        // 수량에 따라 등록 상태 업데이트 필요
         registerService.findOneByItem(itemId, form.getStockQuantity()); // 수정 시 외래키(itemId) 이용
-
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔 => 변경감지
         itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
 
         return "redirect:/myRegisters";
     }
 
+    /**
+     * 나의 (등록)상품 취소
+     */
     @GetMapping("myRegisters/{registerId}/cancel")
     public String cancelMyItem(@PathVariable("registerId") Long registerId) {
+        // 컨트롤러에서는 값만 넘김 => 서비스 계층에서 데이터 변경 => 상품 재고 업데이트(변경감지)
         registerService.cancelRegister(registerId);
 
         return "redirect:/myRegisters";
     }
 
-    private MemberDto getMemberNameDto(Member member) { // 엔티티 -> DTO
-        return new MemberDto(member.getNickName());
-    }
-
-    private static ItemForm createItemForm(ItemDto item) {      // DTO(데이터전송객체) -> Form (화면 종속적)
+    private static ItemForm createItemForm(Item item) {    // 엔티티 -> Form (화면 종속적)
         ItemForm form = new ItemForm();
         form.setName(item.getName());
         form.setAuthor(item.getAuthor());
@@ -184,14 +179,8 @@ public class RegisterController {   // Controller 가 Service 갖다씀
         return form;
     }
 
-    private ItemDto getItemDto(Item item) { // 엔티티 -> DTO
-        // Dto 가 파라미터로 엔티티를 받는 것은 문제가 안됨
-        // 왜냐하면 중요하지 않은 곳에서 중요한 엔티티를 의존하기때문에
-        return new ItemDto(item);
-    }
-
-    private static ItemDto getItemDto(ItemForm form) {  // Form -> DTO
-
-        return new ItemDto(form);
+    private static RegisterItemDto createRegisterItemDto(ItemForm form) {  // Form -> DTO
+        // Controller 계층이 Service 계층을 참조하는 것은 문제없음
+        return new RegisterItemDto(form);   // Service 계층 Dto
     }
 }

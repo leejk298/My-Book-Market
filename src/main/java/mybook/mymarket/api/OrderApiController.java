@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.dto.OrderDto;
 import mybook.mymarket.domain.*;
 import mybook.mymarket.repository.OrderRepository;
-import mybook.mymarket.repository.OrderSearch;
 import mybook.mymarket.repository.order.query.OrderQueryDto;
 import mybook.mymarket.repository.order.query.OrderQueryRepository;
 import mybook.mymarket.service.OrderService;
@@ -27,16 +26,19 @@ public class OrderApiController {
     /**
      * 상품 주문
      */
-    @PostMapping("/api/order/{id}")
+    @PostMapping("/api/order/{id}")  // id를 pathVariable 로 가져옴
     public ResponseData<OrderDto> createOrder(@PathVariable("id") Long memberId,
                                               @RequestBody UserRequest request) {
-
-        // 주문 시에는 어떤 회원이 구매하는 지 정보가 필요하므로 memberId 를 변수로 받음
+        // 주문 시에는 어떤 회원이 구매하는지 정보가 필요하므로 memberId
+        // 추가로 어떠한 등록 상품을 구매할 것인지 정보가 필요하므로 registerId
+        // 상품을 몇 개 주문, 거래정보는 어떻게 할 것인지(직거래, 배송)
         Long orderId = orderService.order(memberId, request.registerId, request.count, request.type);
 
+        // Json 데이터를 보여주기 위한 로직
         Order order = orderRepository.findOne(orderId);
         OrderDto orderDto = new OrderDto(order);
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(orderDto);
     }
 
@@ -46,15 +48,21 @@ public class OrderApiController {
     @GetMapping("/api/orders/cancel/{id}")
     public ResponseData<OrderDto> cancelOrder(@PathVariable("id") Long orderId) {
         // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
+        /** 커맨드와 쿼리를 분리하자 */
+        // 커맨드: update 같은 변경성 메소드는 void 로 끝내거나 id값 정도만 반환함(찾기 위해)
         orderService.cancelOrder(orderId);
         // 주문을 취소하게 되면 상품 재고는 원복되고, 주문 상태는 CANCEL
         // 주문 시 재고가 0이되었다가 해당 주문을 취소하게되면
         // 등록 상태는 REGISTER => 주문도 가능하게 됨
         // 또한 주문의 거래상태가 COMP(거래완료)이면 취소 불가능
         // => NotCorrectAccess("올바른 접근이 아닙니다.") 예외 발생
+
+        // 쿼리: 그 후에 별도로 쿼리를 짠다
+        // Json 데이터를 보여주기 위한 로직
         Order order = orderRepository.findOne(orderId);
         OrderDto orderDto = new OrderDto(order);
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(orderDto);
     }
 
@@ -64,13 +72,19 @@ public class OrderApiController {
     @GetMapping("/api/orders/complete/{id}")
     public ResponseData<OrderDto> completeOrderDeal(@PathVariable("id") Long orderId) {
         // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
+        /** 커맨드와 쿼리를 분리하자 */
+        // 커맨드: update 같은 변경성 메소드는 void 로 끝내거나 id값 정도만 반환함(찾기 위해)
         orderService.completeDeal(orderId);
         // 주문 거래를 완료하게 되면 해당 주문, 상품 수정은 불가능하며, 거래 상태는 COMP
         // 또한 주문 상태가 CANCEL(취소)이면 거래완료 불가능
         // => NotCorrectAccess("올바른 접근이 아닙니다.") 예외 발생
+
+        // 쿼리: 그 후에 별도로 쿼리를 짠다
+        // Json 데이터를 보여주기 위한 로직
         Order order = orderRepository.findOne(orderId);
         OrderDto orderDto = new OrderDto(order);
 
+        // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(orderDto);
     }
 
@@ -89,9 +103,8 @@ public class OrderApiController {
     }
 
     /**
-     * 주문 조회
+     * 전체 주문 조회
      */
-
     /**
      * v2: 일반 Join - 엔티티
      * : Lazy 로딩에 의한 DB 쿼리가 너무 많이 나감
@@ -177,7 +190,7 @@ public class OrderApiController {
      */
 
     /**
-     * 나의 주문상품 조회
+     * 나의 주문 조회
      */
     @GetMapping("/api/v2/myOrders/{id}")
     public Result<List<OrderDto>> myOrdersV2(@PathVariable("id") Long memberId) {

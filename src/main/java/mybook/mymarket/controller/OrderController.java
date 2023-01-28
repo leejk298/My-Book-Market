@@ -4,10 +4,8 @@ package mybook.mymarket.controller;
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.form.DeliveryForm;
 import mybook.mymarket.domain.Member;
-import mybook.mymarket.domain.Order;
 import mybook.mymarket.domain.Register;
 import mybook.mymarket.controller.dto.MemberDto;
-import mybook.mymarket.controller.dto.OrderDto;
 import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.OrderSearch;
@@ -57,7 +55,7 @@ public class OrderController {
     }
 
     @ModelAttribute("deliveryCodes")
-    public List<DeliveryForm> deliveryForms() {
+    public List<DeliveryForm> deliveryForms() { // 거래(배송) 정보
         List<DeliveryForm> deliveryCodes = new ArrayList<>();
         deliveryCodes.add(new DeliveryForm("DIRECT", "직거래"));
         deliveryCodes.add(new DeliveryForm("DELIVERY", "배송"));
@@ -71,8 +69,7 @@ public class OrderController {
                          @RequestParam("registerId") Long registerId,
                          @RequestParam("count") int count,
                          @RequestParam("type") String type) {
-
-//         컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
         orderService.order(memberId, registerId, count, type);
 
         return "redirect:/";
@@ -85,9 +82,14 @@ public class OrderController {
     // @ModelAttribute: model 박스에 자동으로 담긴다고 생각
     public String orderList(@SessionAttribute("memberId") Long memberId,
                             @ModelAttribute("orderSearch") OrderSearch orderSearch,
-                            Model model) {
+                            Model model) {  // orderSearch: where 문에 들어갈 조건
         // Where 절에 검색될 조건들을 포함하는 Order 엔티티 리스트
-//        List<Order> orders = orderService.findOrders(orderSearch);  // orderSearch: where 문에 들어갈 조건
+        // List<Order> orders = orderService.findOrders(orderSearch);
+        // ToOne 관계 (Member, Deal)은 Fetch join 으로 한방 쿼리로 가져옴
+        // orderItems -> item - register (OneToOne 양방향연관관계)에서 N + 1 문제 발생
+        // => register 가 영속성 컨텍스트에 존재하지 않으므로 계속 DB 에 쿼리가 나가게 됨
+        // => orderItem - item (ManyToOne), item - register (OneToOne) => ToOne 관계 Dto 로 직접 조인하여 해결
+        // => in 절에서 order_id로 해당 주문 가져옴
         List<OrderQueryDto> orders = orderRepository.findAllByString_optimization(orderSearch);
         Member member = memberService.findOne(memberId);    // 엔티티 조회
 
@@ -105,6 +107,7 @@ public class OrderController {
      */
     @PostMapping("/orders/{orderId}/complete")  // 거래 완료
     public String completeDeal(@PathVariable("orderId") Long orderId) {
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
         orderService.completeDeal(orderId); // 해당 주문의 거래 정보 업데이트
 
         return "redirect:/orders";
@@ -115,6 +118,8 @@ public class OrderController {
      */
     @PostMapping("/orders/{orderId}/cancel")   // 주문 취소
     public String cancelOrder(@PathVariable("orderId") Long orderId) {
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
+        // 해당 주문의 주문 상품 -> 상품 -> 등록 상태까지 변경감지
         orderService.cancelOrder(orderId);
 
         return "redirect:/orders";
@@ -125,8 +130,8 @@ public class OrderController {
      */
     @GetMapping("/myOrders")
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
-
-//        List<Order> orders = orderService.findMyOrders(memberId);
+        // 전체 주문상품 조회와 같은 문제 => 최적화필요
+        // List<Order> orders = orderService.findMyOrders(memberId);
         List<OrderQueryDto> orderDtoList = orderRepository.findMyOrders_optimization(memberId);
 
         model.addAttribute("orders", orderDtoList);
@@ -134,21 +139,29 @@ public class OrderController {
         return "orders/myOrderList";
     }
 
+    /**
+     * 나의 주문 - 거래완료
+     */
     @PostMapping("/myOrders/{orderId}/complete")
     public String completeMyDeal(@PathVariable("orderId") Long orderId) {
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
         orderService.completeDeal(orderId);
 
         return "redirect:/myOrders";
     }
 
+    /**
+     * 나의 주문 - 취소
+     */
     @PostMapping("/myOrders/{orderId}/cancel")
     public String cancelMyOrder(@PathVariable("orderId") Long orderId) {
+        // 컨트롤러에서는 값만 넘기고 서비스 계층의 Tx 안에서 값 변경되게끔
         orderService.cancelOrder(orderId);
 
         return "redirect:/myOrders";
     }
 
-    private MemberDto getMemberDto(Member member) {
+    private MemberDto getMemberDto(Member member) { // 엔티티 -> Dto
         return new MemberDto(member.getId(), member.getNickName());
     }
 }

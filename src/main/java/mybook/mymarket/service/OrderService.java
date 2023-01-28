@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import mybook.mymarket.domain.*;
 import mybook.mymarket.domain.item.Item;
+import mybook.mymarket.exception.NotCorrectAccess;
 import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.MemberRepository;
@@ -77,6 +78,10 @@ public class OrderService {
         // 엔티티 조회
         Order order = orderRepository.findOne(orderId); // 해당 주문 가져와서
 
+        if (order.getStatus().name().equals("CANCEL")) {
+            throw new NotCorrectAccess("올바른 접근이 아닙니다.");
+        }
+
         // 거래 완료
         order.completeDeal();   // 해당 주문의 거래 상태 업데이트 => 변경감지
     }
@@ -88,6 +93,10 @@ public class OrderService {
     public void cancelOrder(Long orderId) { // 취소 시 id 값만 넘어옴 => 찾아야함 => 엔티티 조회
         // 엔티티 조회
         Order order = orderRepository.findOne(orderId); // 값 가져옴
+
+        if (order.getDeal().getStatus().name().equals("COMP")) {
+            throw new NotCorrectAccess("올바른 접근이 아닙니다.");
+        }
 
         // 주문 취소
         order.cancel(); // 해당 주문의 주문 상품 -> 상품 -> 등록 상태까지 변경감지

@@ -2,6 +2,7 @@ package mybook.mymarket.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.dto.OrderDto;
 import mybook.mymarket.domain.*;
@@ -9,9 +10,8 @@ import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.OrderSearch;
 import mybook.mymarket.repository.order.query.OrderQueryDto;
 import mybook.mymarket.repository.order.query.OrderQueryRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import mybook.mymarket.service.OrderService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +22,71 @@ import java.util.stream.Collectors;
 public class OrderApiController {
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
+    private final OrderService orderService;
+
+    /**
+     * 상품 주문
+     */
+    @PostMapping("/api/order/{id}")
+    public ResponseData<OrderDto> createOrder(@PathVariable("id") Long memberId,
+                                              @RequestBody UserRequest request) {
+
+        // 주문 시에는 어떤 회원이 구매하는 지 정보가 필요하므로 memberId 를 변수로 받음
+        Long orderId = orderService.order(memberId, request.registerId, request.count, request.type);
+
+        Order order = orderRepository.findOne(orderId);
+        OrderDto orderDto = new OrderDto(order);
+
+        return new ResponseData<>(orderDto);
+    }
+
+    /**
+     * 상품 취소
+     */
+    @GetMapping("/api/orders/cancel/{id}")
+    public ResponseData<OrderDto> cancelOrder(@PathVariable("id") Long orderId) {
+        // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
+        orderService.cancelOrder(orderId);
+        // 주문을 취소하게 되면 상품 재고는 원복되고, 주문 상태는 CANCEL
+        // 주문 시 재고가 0이되었다가 해당 주문을 취소하게되면
+        // 등록 상태는 REGISTER => 주문도 가능하게 됨
+        // 또한 주문의 거래상태가 COMP(거래완료)이면 취소 불가능
+        // => NotCorrectAccess("올바른 접근이 아닙니다.") 예외 발생
+        Order order = orderRepository.findOne(orderId);
+        OrderDto orderDto = new OrderDto(order);
+
+        return new ResponseData<>(orderDto);
+    }
+
+    /**
+     * 거래 완료
+     */
+    @GetMapping("/api/orders/complete/{id}")
+    public ResponseData<OrderDto> completeOrderDeal(@PathVariable("id") Long orderId) {
+        // 로그인을 하면 회원 정보를 세션에 저장하므로 이미 로그인된 상태로 가정
+        orderService.completeDeal(orderId);
+        // 주문 거래를 완료하게 되면 해당 주문, 상품 수정은 불가능하며, 거래 상태는 COMP
+        // 또한 주문 상태가 CANCEL(취소)이면 거래완료 불가능
+        // => NotCorrectAccess("올바른 접근이 아닙니다.") 예외 발생
+        Order order = orderRepository.findOne(orderId);
+        OrderDto orderDto = new OrderDto(order);
+
+        return new ResponseData<>(orderDto);
+    }
+
+    @Data
+    @NoArgsConstructor
+    static class UserRequest {
+        Long registerId;  // 등록회원, 상품 정보 필요
+        int count;  // 주문 수량
+        String type; // 거래 타입
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class ResponseData<T> {
+        private T data;
+    }
 
     /**
      * 주문 조회

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.form.DeliveryForm;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.domain.Register;
-import mybook.mymarket.controller.dto.MemberDto;
+import mybook.mymarket.service.dto.MemberDto;
 import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.OrderSearch;

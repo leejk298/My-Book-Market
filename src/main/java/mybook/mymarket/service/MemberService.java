@@ -1,10 +1,9 @@
 package mybook.mymarket.service;
 
 import lombok.RequiredArgsConstructor;
-import mybook.mymarket.controller.dto.MemberDto;
-import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.repository.MemberRepository;
+import mybook.mymarket.service.dto.MemberDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,7 @@ public class MemberService {
      * 회원가입 => 데이터 변경 필요 => @Transactional
      */
     @Transactional // JPA 에서 모든 데이터 변경이나 로직들은 트랜잭션 안에서 실행되어야함
-    public Long join(MemberDto memberDto) {
+    public Long join(MemberDto memberDto) { // MemberDto - 서비스 계층 Dto
         validateDuplicateMember(memberDto.getNickName());    // 중복 회원 검증
 
         // Dto -> 엔티티
@@ -87,7 +86,9 @@ public class MemberService {
                 throw new IllegalStateException("이미 존재하는 회원입니다.");  // 예외처리
             }
         }
+
         // 현재 id와 수정 id가 같으면 그대로 변경
+        // => 역참조 방지하기 위해 파라미터로 넘김
         findMember.changeMember(memberDto.getNickName(), memberDto.getPassword(), memberDto.getUserName(), memberDto.getAddress());
     }
 

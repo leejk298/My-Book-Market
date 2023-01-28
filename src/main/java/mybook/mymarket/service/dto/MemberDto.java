@@ -1,7 +1,6 @@
-package mybook.mymarket.controller.dto;
+package mybook.mymarket.service.dto;
 
 import lombok.Getter;
-import mybook.mymarket.controller.form.MemberForm;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 
@@ -26,10 +25,6 @@ public class MemberDto {
     protected  MemberDto() {
     }
 
-    public MemberDto(String nickName) {   // 단순 이름
-        this.nickName = nickName;
-    }
-
     public MemberDto(Long id, String nickName) {    // 이름과 id
         this.id = id;
         this.nickName = nickName;
@@ -43,11 +38,11 @@ public class MemberDto {
         this.address = member.getAddress();
     }
 
-    public MemberDto(MemberForm form) { // Form -> DTO
-        this.nickName = form.getNickName();
-        this.password = form.getPassword();
-        this.userName = form.getUserName();
-        Address address1 = new Address(form.getCity(), form.getStreet(), form.getZipcode());
-        this.address = address1;
+    public MemberDto(String nickName, String password, String userName, String city, String street, String zipcode) {
+        // => 역참조 방지하기 위해 파라미터로 넘김
+        this.nickName = nickName;
+        this.password = password;
+        this.userName = userName;
+        this.address = new Address(city, street, zipcode);
     }
 }

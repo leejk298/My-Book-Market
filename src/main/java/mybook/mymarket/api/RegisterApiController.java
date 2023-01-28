@@ -12,7 +12,7 @@ import mybook.mymarket.repository.RegisterSearch;
 import mybook.mymarket.repository.register.query.RegisterQueryDto;
 import mybook.mymarket.repository.register.query.RegisterQueryRepository;
 import mybook.mymarket.service.ItemService;
-import mybook.mymarket.service.RegisterItemDto;
+import mybook.mymarket.service.dto.RegisterItemDto;
 import mybook.mymarket.service.RegisterService;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,8 +36,8 @@ public class RegisterApiController {
     @PostMapping("/api/register/{id}")  // id를 pathVariable 로 가져옴
     public ResponseData<RegisterDto> createRegister(@PathVariable("id") Long memberId,
                                                     @RequestBody @Valid ItemForm form) {
-        // 화면 form -> Dto
-        RegisterItemDto itemDto = new RegisterItemDto(form);
+        // 화면 form -> Dto (Service 계층)
+        RegisterItemDto itemDto = createRegisterItemDto(form);
         // 등록 수량 <= 0 이면 NotEnoughStockException("need more stock") 발생
         Long registerId = registerService.register(memberId, itemDto);
 
@@ -47,6 +47,11 @@ public class RegisterApiController {
 
         // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
         return new ResponseData<>(registerDto);
+    }
+
+    private static RegisterItemDto createRegisterItemDto(ItemForm form) {  // Form -> DTO
+        // => 역참조 방지하기 위해 파라미터로 넘김
+        return new RegisterItemDto(form.getName(), form.getAuthor(), form.getPrice(), form.getStockQuantity(), form.getItemTypeForm().name(), form.getEtc());
     }
 
     /**

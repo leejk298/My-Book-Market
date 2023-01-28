@@ -3,7 +3,6 @@ package mybook.mymarket.controller.form;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @AllArgsConstructor

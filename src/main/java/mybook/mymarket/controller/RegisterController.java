@@ -9,7 +9,7 @@ import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.domain.item.Item;
 import mybook.mymarket.repository.RegisterSearch;
 import mybook.mymarket.service.ItemService;
-import mybook.mymarket.service.RegisterItemDto;
+import mybook.mymarket.service.dto.RegisterItemDto;
 import mybook.mymarket.service.RegisterService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -180,7 +180,7 @@ public class RegisterController {   // Controller 가 Service 갖다씀
     }
 
     private static RegisterItemDto createRegisterItemDto(ItemForm form) {  // Form -> DTO
-        // Controller 계층이 Service 계층을 참조하는 것은 문제없음
-        return new RegisterItemDto(form);   // Service 계층 Dto
+        // => 역참조 방지하기 위해 파라미터로 넘김
+        return new RegisterItemDto(form.getName(), form.getAuthor(), form.getPrice(), form.getStockQuantity(), form.getItemTypeForm().name(), form.getEtc());   // Service 계층 Dto
     }
 }

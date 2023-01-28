@@ -1,17 +1,15 @@
 package mybook.mymarket.service;
 
-import mybook.mymarket.controller.dto.MemberDto;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.repository.MemberRepository;
+import mybook.mymarket.service.dto.MemberDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
 
 import java.util.List;
 

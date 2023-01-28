@@ -2,7 +2,6 @@ package mybook.mymarket.repository.order.query;
 
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.DealStatus;
 import mybook.mymarket.domain.DealType;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(of = "orderId")  // v6에서 collect()할 때 orderId를 기준으로 묶어줌
+// @EqualsAndHashCode(of = "orderId")  // v6에서 collect()할 때 orderId를 기준으로 묶어줌
 public class OrderQueryDto {
     private Long orderId;
     private Long memberId;

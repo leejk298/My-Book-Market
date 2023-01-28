@@ -13,6 +13,7 @@ import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.MemberRepository;
 import mybook.mymarket.repository.RegisterRepository;
 import mybook.mymarket.repository.RegisterSearch;
+import mybook.mymarket.service.dto.RegisterItemDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

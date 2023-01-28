@@ -2,9 +2,8 @@ package mybook.mymarket.controller;
 
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.form.MemberForm;
-import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
-import mybook.mymarket.controller.dto.MemberDto;
+import mybook.mymarket.service.dto.MemberDto;
 import mybook.mymarket.service.MemberService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Controller // 스프링 빈에 등록
 @RequiredArgsConstructor    // final 키워드를 가진 필드(memberService)로 생성자를 만들어줌
-public class MemberController {
+public class MemberController { // Controller 가 Service 갖다씀
     private final MemberService memberService;  // 스프링이 스프링빈에 있는 memberRepository 를 주입해줌
 
     /**
@@ -49,9 +48,12 @@ public class MemberController {
         if(result.hasErrors())    // 담겨진 에러가 있으면
             return "members/createMemberForm";   // 화면까지 에러를 가져가서 뿌리게 됨
 
-        // Form -> Dto
+        // 화면 Form (Controller) -> Service 계층 Dto
+        // 파라미터로 넘기면 아무래도 재사용성은 좋음
+        // DTO 를 넘기면 편하지만, 해당 엔티티가 DTO 에 의존하게 됨
+        // => Service 계층에서 Controller 계층을 참조하게됨 => service 게층용 Dto 생성
+        // 그래도 파라미터가 너무 많으면 dto 를 만드는 것을 고려하는 것이 좋다
         MemberDto memberDto = getMemberDto(form);
-//        Member member = createMember(form);     // 객체 생성 및 저장
         memberService.join(memberDto); // 회원 가입
 
         return "redirect:/"; // 데이터가 저장되고 페이지가 재로딩되면 안좋기때문에 redirect => 처음화면으로
@@ -63,10 +65,11 @@ public class MemberController {
     @GetMapping("/members/update")
     public String updateMemberForm(@SessionAttribute(name = "memberId") Long memberId, Model model) {
         // 현재 세션 데이터를 이용하여 로그인 회원 가져오기
+        // 엔티티 조회
         Member member = memberService.findOne(memberId);
-
-        MemberDto memberDto = getMemberDto(member);  // 엔티티 -> DTO
-        MemberForm form = createMemberForm(memberId, memberDto);   // DTO -> Form, 원래 정보 가져오기
+        // 엔티티 -> Form
+        MemberForm form = createMemberForm(member);
+        // model 에 key 가 form 인 데이터 form 을 담는다
         model.addAttribute("form", form);   // form 객체를 model 에 담아서 넘김
 
         return "members/updateMemberForm";
@@ -79,7 +82,7 @@ public class MemberController {
         // @ModelAttribute("form") : form 객체에 바인딩하기 위해
         // 영속 엔티티는 JPA 가 dirty checking 을 통해 변경이 일어나면
         // update 쿼리를 날려서 바꿔줌
-        // Form -> DTO 바꿔서 객체 날려보자
+        // Form -> DTO (Service 계층) 바꿔서 객체 날려보자
         if(result.hasErrors())
             return "members/updateMemberForm";
 
@@ -144,35 +147,22 @@ public class MemberController {
         return "members/memberList";   // memberList 로 넘어감
     }
 
-    private static Member createMember(MemberForm form) {   // Form -> 엔티티
-        Address address = new Address(form.getCity(), form.getStreet(), form.getZipcode());
-
-        Member member = new Member(form.getNickName(), form.getPassword(), form.getUserName(), address);
-
-        return member;
-    }
-
-    private static MemberForm createMemberForm(Long memberId, MemberDto memberDto) {    // DTO(데이터전송객체) -> Form (화면 종속적)
-        MemberForm form = new MemberForm();     // 객체 생성
-        form.setId(memberId);   // 값 세팅
-        form.setNickName(memberDto.getNickName());
-        form.setPassword(memberDto.getPassword());
-        form.setUserName(memberDto.getUserName());
-        form.setCity(memberDto.getAddress().getCity());
-        form.setStreet(memberDto.getAddress().getStreet());
-        form.setZipcode(memberDto.getAddress().getZipcode());
+    private static MemberForm createMemberForm(Member member) { // 엔티티 -> Form (화면 종속적)
+        MemberForm form = new MemberForm();
+        form.setId(member.getId());
+        form.setNickName(member.getNickName());
+        form.setPassword(member.getPassword());
+        form.setUserName(member.getUserName());
+        form.setCity(member.getAddress().getCity());
+        form.setStreet(member.getAddress().getStreet());
+        form.setZipcode(member.getAddress().getZipcode());
 
         return form;
     }
 
-    private static MemberDto getMemberDto(Member member) {  // 엔티티 -> DTO
-        // Dto 가 파라미터로 엔티티를 받는 것은 문제가 안됨
-        // 왜냐하면 중요하지 않은 곳에서 중요한 엔티티를 의존하기때문에
-        return new MemberDto(member);
-    }
-
-    private static MemberDto getMemberDto(MemberForm form) {    // Form -> DTO
-
-        return new MemberDto(form);
+    private static MemberDto getMemberDto(MemberForm form) {  // Form -> DTO
+        // => 역참조 방지하기 위해 파라미터로 넘김
+        return new MemberDto(form.getNickName(), form.getPassword(), form.getUserName(),
+                form.getCity(), form.getStreet(), form.getZipcode());
     }
 }

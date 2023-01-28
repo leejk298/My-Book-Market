@@ -4,7 +4,7 @@ package mybook.mymarket.api;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import mybook.mymarket.controller.dto.MemberDto;
+import mybook.mymarket.service.dto.MemberDto;
 import mybook.mymarket.domain.Address;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.service.MemberService;
@@ -80,8 +80,8 @@ public class MemberApiController {
         memberService.updateMember(id, memberDto);
 
         // 쿼리: 그 후에 별도로 쿼리를 짠다
-        Member findMember = memberService.findOne(id);
-        MemberDto updateMemberDto = new MemberDto(findMember);
+        Member updateMember = memberService.findOne(id);
+        MemberDto updateMemberDto = new MemberDto(updateMember);
 
         // 등록하여 반환된 필드 값들을 Json 형식으로 보여줌
         // @AllArgsConstructor 를 썼기때문에 모든 파라미터를 담는 생성자 필요

@@ -1,12 +1,11 @@
 package mybook.mymarket.service;
 
-import mybook.mymarket.controller.dto.ItemDto;
 import mybook.mymarket.domain.*;
 import mybook.mymarket.domain.item.Item;
-import mybook.mymarket.domain.item.Novel;
 import mybook.mymarket.exception.NotEnoughStockException;
 import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.OrderRepository;
+import mybook.mymarket.service.dto.RegisterItemDto;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,22 +40,23 @@ public class OrderServiceTest {
     @Test
     public void 상품주문() throws Exception {
         // given: 회원, 상품 세팅, 등록
-        // 등록회원
+        // 등록회원 => 직거래 시 등록회원 주소
         Address registerAddress = new Address("a", "b", "c");
         Member registerMember = createMember("testMember", registerAddress);
         em.persist(registerMember);
 
-        // 주문회원
+        // 주문회원 => 배송거래 시 주문회원 주소
         Address orderAddress = new Address("1", "2", "3");
         Member orderMember = createMember("orderMember", orderAddress);
         em.persist(orderMember);
 
-        // 상품 등록
-        String itemType = "Novel";  // 상품분류 - 라디오버튼으로 가져옴
+        // 상품 세팅 및 등록
+        String type = "Novel";  // 타입: 라디오 버튼으로 받아옴
+        String itemName = "testItem", author = "test", etc = "test";
         int price = 10000, registerStockQuantity = 10;
-        Novel novel = createNovel(price, registerStockQuantity); // item 세팅 아직 영속 X
-        ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
-        Long registerId = registerService.register(registerMember.getId(), itemDto, itemType, registerStockQuantity);// item 영속 O
+        // 화면 종속적인 Form 데이터를 입력받아서 서비스계층Dto 인 RegisterItemDto 객체생성
+        RegisterItemDto itemDto = new RegisterItemDto(itemName, author, price, registerStockQuantity, type, etc);
+        Long registerId = registerService.register(registerMember.getId(), itemDto);   // item 영속 O
 
         // when: 상품 주문, 거래
         String dealType = "DIRECT"; // 직거래 -> 등록회원 주소
@@ -91,12 +91,13 @@ public class OrderServiceTest {
         Member orderMember = createMember("orderMember", orderAddress);
         em.persist(orderMember);
 
-        // 상품 등록
-        String itemType = "Novel";  // 상품분류 - 라디오버튼으로 가져옴
+        // 상품 세팅 및 등록
+        String type = "Novel";  // 타입: 라디오 버튼으로 받아옴
+        String itemName = "testItem", author = "test", etc = "test";
         int price = 10000, registerStockQuantity = 10;
-        Novel novel = createNovel(price, registerStockQuantity); // item 세팅 아직 영속 X
-        ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
-        Long registerId = registerService.register(registerMember.getId(), itemDto, itemType, registerStockQuantity);// item 영속 O
+        // 화면 종속적인 Form 데이터를 입력받아서 서비스계층Dto 인 RegisterItemDto 객체생성
+        RegisterItemDto itemDto = new RegisterItemDto(itemName, author, price, registerStockQuantity, type, etc);
+        Long registerId = registerService.register(registerMember.getId(), itemDto);   // item 영속 O
 
         // when
         String dealType = "DIRECT";     // 직거래 -> 등록회원 주소
@@ -123,18 +124,18 @@ public class OrderServiceTest {
         Member orderMember = createMember("orderMember", orderAddress);
         em.persist(orderMember);
 
-        // 상품 등록
-        String itemType = "Novel";  // 상품분류 - 라디오버튼으로 가져옴
+        // 상품 세팅, 등록 및 주문
+        String type = "Novel";  // 타입: 라디오 버튼으로 받아옴
+        String itemName = "testItem", author = "test", etc = "test";
         int price = 10000, registerStockQuantity = 10;
-        Novel novel = createNovel(price, registerStockQuantity); // item 세팅 아직 영속 X
-        ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
-        Long registerId = registerService.register(registerMember.getId(), itemDto, itemType, registerStockQuantity);// item 영속 O
-
+        // 화면 종속적인 Form 데이터를 입력받아서 서비스계층Dto 인 RegisterItemDto 객체생성
+        RegisterItemDto itemDto = new RegisterItemDto(itemName, author, price, registerStockQuantity, type, etc);
+        Long registerId = registerService.register(registerMember.getId(), itemDto);   // item 영속 O
         String dealType = "DELIVERY";   // 배송 -> 주문 회원 주소
         int orderStockQuantity = 5;
         Long orderId = orderService.order(orderMember.getId(), registerId, orderStockQuantity, dealType);
 
-        // when
+        // when: 주문 취소
         Register register = registerService.findOne(registerId);
         Item item = itemRepository.findOne(register.getItem().getId());
         orderService.cancelOrder(orderId);
@@ -161,13 +162,13 @@ public class OrderServiceTest {
         Member orderMember = createMember("orderMember", orderAddress);
         em.persist(orderMember);
 
-        // 상품 등록
-        String itemType = "Novel";  // 상품분류 - 라디오버튼으로 가져옴
+        // 상품 세팅 및 등록
+        String type = "Novel";  // 타입: 라디오 버튼으로 받아옴
+        String itemName = "testItem", author = "test", etc = "test";
         int price = 10000, registerStockQuantity = 10;
-        Novel novel = createNovel(price, registerStockQuantity); // item 세팅 아직 영속 X
-        ItemDto itemDto = new ItemDto(novel);   // 엔티티 -> Dto
-        Long registerId = registerService.register(registerMember.getId(), itemDto, itemType, registerStockQuantity);// item 영속 O
-
+        // 화면 종속적인 Form 데이터를 입력받아서 서비스계층Dto 인 RegisterItemDto 객체생성
+        RegisterItemDto itemDto = new RegisterItemDto(itemName, author, price, registerStockQuantity, type, etc);
+        Long registerId = registerService.register(registerMember.getId(), itemDto);   // item 영속 O
         Register register = registerService.findOne(registerId);
         Item item = itemRepository.findOne(register.getItem().getId());
 
@@ -184,17 +185,6 @@ public class OrderServiceTest {
         assertEquals("배송 거래 시 주소는 주문회원 주소", orderMember.getAddress(), order.getDeal().getAddress());
         assertEquals("상품 재고", registerStockQuantity - orderStockQuantity, item.getStockQuantity());
         assertEquals("거래 완료 시 거래 상태는 COMP", DealStatus.COMP, order.getDeal().getStatus());
-    }
-
-    private static Novel createNovel(int price, int stockQuantity) {
-        Novel novel = new Novel();
-        novel.setName("testBook");
-        novel.setAuthor("test");
-        novel.setPrice(price);
-        novel.setStockQuantity(stockQuantity);
-        novel.setGenre("test");
-
-        return novel;
     }
 
     private static Member createMember(String nickName, Address address) {

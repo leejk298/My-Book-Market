@@ -1,7 +1,6 @@
 package mybook.mymarket.repository;
 
 import lombok.RequiredArgsConstructor;
-import mybook.mymarket.controller.dto.MemberDto;
 import mybook.mymarket.domain.Member;
 import org.springframework.stereotype.Repository;
 

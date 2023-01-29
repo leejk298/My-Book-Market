@@ -103,14 +103,33 @@ public class RegisterApiController {
 
     /**
      * v2: 일반 Join - 엔티티
-     * : Lazy 로딩에 의한 DB 쿼리가 너무 많이 나감
-     * => register 1번 - member, item N번(register 조회수만큼)
+     * 연관 엔티티에 일반 join 을 하게되면 Select 대상의 엔티티는 영속화하여 가져오지만,
+     * 조인의 대상은 영속화하여 가져오지 않는다.
+     * 연관 엔티티가 검색 조건에 포함되고, 조회의 주체가 검색 엔티티뿐일 때 사용하면 좋다
+     * => member, item 에 대한 Proxy 객체 초기화 => Lazy 로딩에 의한 DB 쿼리가 많이 나감
+     * => register 1번 - member, item N번(register 조회수만큼) => N + 1 문제 발생
      * => 영속성 컨텍스트에 존재하지 않으면 계속 DB 에 쿼리가 나가므로
      * => 상당히 많은 쿼리가 나감 => 최적화 필요 => Fetch join(v3)
      */
     @GetMapping("/api/v2/registers")
     public Result<List<RegisterDto>> registersV2() {
-        List<Register> registers = registerRepository.findAllByString(new RegisterSearch());
+        List<Register> registers = registerRepository.findAllByRegister();
+
+        List<RegisterDto> result = registers.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        return new Result<>(result.size(), result);
+    }
+    /**
+     * 전체 (등록)상품 조회 시 @GetMapping 과 @PostMapping 차이
+     * @GetMapping: 전체 상품 조회, @PostMapping: @RequestBody 로 넘긴 조건에 맞는 상품 조회
+     * @RequestBody: Json 으로 온 RegisterSearch(data)를 넘김
+     * RegisterSearch: where 문에서 검색될 조건들을 만족하는 등록 상품을 조회
+     */
+    @PostMapping("/api/v2/registers")
+    public Result<List<RegisterDto>> registersV2(@RequestBody RegisterSearch registerSearch) {
+        List<Register> registers = registerRepository.findAllByString(registerSearch);
 
         List<RegisterDto> result = registers.stream()
                 .map(r -> new RegisterDto(r))
@@ -121,18 +140,32 @@ public class RegisterApiController {
 
     /**
      * v3: Fetch Join - 엔티티
-     *  v2랑 v3는 로직은 같지만 쿼리가 완전히 다름, Fetch join: 한방쿼리
-     *  한 번에 다 끌고와서 엔티티 -> Dto 로 변환하는 단점이 있음 => 최적화: 직접 Dto 이용(v4)
-     *  register 를 기준으로 X To One 은 fetch join 을 하고
-     *  => ToOne 은 데이터 뻥튀기가 안되므로 한 번에 끌고와야 함
-     *  => Member(다대일), Item(일대일) 이므로 한방쿼리로 나옴
-     *  => default_batch_fetch_size: 100 # where 절에서 IN 쿼리의 개수 => id 개수
-     *  => 1 + N => 1로 되어버림
-     *  => 조인보다 DB 데이터 전송량이 최적화 됨
+     * 연관 엔티티에 fetch join 을 하게되면 select 대상의 엔티티 뿐만 아니라 조인의 대상까지 영속화하여 가져온다.
+     * 연관 엔티티까지 select 의 대상일 때, N + 1의 문제를 해결하여 가져올 수 있는 좋은 방법이다.
+     * v2랑 v3는 로직은 같지만 쿼리가 완전히 다름, Fetch join: 한방쿼리
+     * 한 번에 다 끌고와서 엔티티 -> Dto 로 변환하는 단점이 있음 => 최적화: 직접 Dto 이용(v4)
+     * register 를 기준으로 X To One 은 무조건 fetch join 을 하고
+     * => ToOne 은 데이터 뻥튀기가 안되므로 한 번에 끌고와야 함
+     * => Member(다대일), Item(일대일) 이므로 한방쿼리로 나옴
+     * => 1 + N => 1로 되어버림
+     * => 조인보다 DB 데이터 전송량이 최적화 됨
      */
     @GetMapping("/api/v3/registers")
     public Result<List<RegisterDto>> registersV3() {
-        List<Register> registers = registerRepository.findAllWithMemberItem();
+        List<Register> registers = registerRepository.findAllWithMemberItem_fetch();
+
+        List<RegisterDto> result = registers.stream()
+                .map(r -> new RegisterDto(r))
+                .collect(Collectors.toList());
+
+        // Object 타입 {...}으로 반환, Result 라는 껍데기를 씌어서 data 필드의 값은 List 가 나가게됨
+        // Object 타입으로 반환하지 않으면 배열타입 [...] 으로 나가게됨 => 확장성, 유연성 X
+        return new Result<>(result.size(), result);
+    }
+
+    @PostMapping("/api/v3/registers")
+    public Result<List<RegisterDto>> registersV3(@RequestBody RegisterSearch registerSearch) {
+        List<Register> registers = registerRepository.findAllWithMemberItem_fetch(registerSearch);
 
         List<RegisterDto> result = registers.stream()
                 .map(r -> new RegisterDto(r))
@@ -145,7 +178,7 @@ public class RegisterApiController {
 
     /**
      * v4: 일반 Join - Dto
-     * : ToOne 관계(M, D)들 조회하고 => findRegisters()
+     * : ToOne 관계(M, D)들 조회 => findRegisters()
      * tradeoff => Fetch 조인(V3)보다 쿼리를 직접 작성하는 양도 많지만,
      * 장점은 Fetch 조인보다 확실히 데이터를 select 한 양이 줄어듦
      */
@@ -156,9 +189,16 @@ public class RegisterApiController {
         return new Result<>(allByDto.size(), allByDto);
     }
 
+    @PostMapping("/api/v4/registers")
+    public Result<List<RegisterQueryDto>> registersV4(@RequestBody RegisterSearch registerSearch) {
+        List<RegisterQueryDto> allByDto = registerQueryRepository.findAllByDto_search(registerSearch);
+
+        return new Result<>(allByDto.size(), allByDto);
+    }
+
     /**
      * v3와 v4의 차이점
-     * Fetch join(v3)는 hibernate.default_batch_fetch_size , @BatchSize 같이
+     * Fetch join(v3)는 XToOne 이 아닌 컬렉션 조회 시 hibernate.default_batch_fetch_size , @BatchSize 같이
      * 코드를 거의 수정하지 않고, 옵션만 약간 변경해서, 다양한 성능 최적화를 시도할 수 있다.
      * 반면에 DTO 를 직접 조회하는 방식(v4)은 성능을 최적화하거나 성능최적화 방식을 변경할 때 많은 코드를 변경해야 한다.
      * V3 (Fetch join)의 경우 join 은 V4와 성능이 같지만, Select 절에서 데이터를 많이 긁어오므로
@@ -177,7 +217,8 @@ public class RegisterApiController {
      * 쿼리 방식 선택 권장 순서 (V3 <-> V4)
      1. 우선 엔티티를 DTO 로 변환하는 방법을 선택(V2) -> 코드 유지보수성 좋음
      2. 필요하면 Fetch join 으로 성능을 최적화한다(V3) -> 대부분의 성능이슈 해결가능, 90 %
-     3. 그래도 안되면 DTO 로 직접 조회하는 방법을 사용(V4)
+     => Register 조회의 경우에는 Fetch join 으로 모든 ToOne 관계를 한 번에 갖고 오므로 N + 1 문제 해결
+     3. 그래도 안되면 DTO 로 직접 조회하는 방법을 사용(V4) - Fetch join 사용 불가능
      4. 최후의 방법은 JPA 가 제공하는 네이티브 SQL 이나 SpringJDBCTemplate 을 사용해서 SQL 직접 사용
      */
 

@@ -25,6 +25,23 @@ public class RegisterRepository {
         return em.find(Register.class, id);
     }
 
+    public Register findOneByItem(Long id) { // 등록상품으로 해당 등록 가져오기
+        return em.createQuery("select r from Register r join r.item i " +
+                        "where i.id = :id", Register.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
+    public List<Register> findMyRegisters(Long memberId) {  // 회원으로 해당 등록 가져오기
+        return em.createQuery(
+                        "select r from Register r " +
+                                "join r.member m " +
+                                "join r.item i " +
+                                "where m.id = :memberId", Register.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+    }
+
     public List<Register> findAllByRegister() { // 모든 아이템과 주문한 회원을 가져오기 위해
         return em.createQuery("select r from Register r " +
                         "join r.item i join r.member m", Register.class)
@@ -62,7 +79,7 @@ public class RegisterRepository {
 
         // 상품명 검색
         if (StringUtils.hasText(registerSearch.getItemName())) {
-            if(isFirstCondition) {
+            if (isFirstCondition) {
                 jpql += " where";
                 isFirstCondition = false;
             } else {
@@ -87,38 +104,77 @@ public class RegisterRepository {
         return query.getResultList();
     }
 
-    public Register findOneByItem(Long id) { // 등록상품으로 해당 등록 가져오기
-        return em.createQuery("select r from Register r join r.item i " +
-                "where i.id = :id", Register.class)
-                .setParameter("id", id)
-                .getSingleResult();
-    }
-
-    public List<Register> findMyRegisters(Long memberId) {  // 회원으로 해당 등록 가져오기
+    /**
+     * Fetch Join (한 방 쿼리)
+     * 성능 최적화 => N + 1 문제 성능 문제의 90프로 해결
+     */
+    public List<Register> findAllWithMemberItem_fetch() {
+        // SQL 에는 fetch 라는 말이 없음 => JPA 에서 나온 것
         return em.createQuery(
-                        "select r from Register r " +
-                                "join r.member m " +
-                                "join r.item i " +
-                                "where m.id = :memberId", Register.class)
-                .setParameter("memberId", memberId)
+                  "select r from Register r " +
+                            "join fetch r.member m " +
+                            "join fetch r.item i", Register.class)
                 .getResultList();
     }
 
-    /**
-     * Fetch Join
-     * 성능 최적화 => N + 1 문제 성능 문제의 90프로 해결
-     */
-    public List<Register> findAllWithMemberItem() {
+    public List<Register> findAllWithMemberItem_fetch(RegisterSearch registerSearch) {
         // Register 를 조회하는데 Member 와 Item 을 from 절에서 join 하여
         // Select 절에서 같이 한 번에 가져오게 됨
         // => 한방 쿼리로 R, M, I 조인하여 Select 절에 넣어서 가져오는 것
         // M, I Lazy 로딩이여도 무시하고 Proxy 가 아닌 진짜 객체의 값을 한 번에 다 채워서 가져옴
-        return em.createQuery(
-                "select r from Register r " +
-                        "join fetch r.member m " +
-                        "join fetch r.item i", Register.class)
-                .getResultList();
-        // SQL 에는 fetch 라는 말이 없음 => JPA 에서 나온 것
+        // 등록 - (등록)상품, (등록)회원 => fetch join
+        String jpql = "select r from Register r join fetch r.member m join fetch r.item i";
+        boolean isFirstCondition = true;
+
+        //주문 상태 검색
+        if (registerSearch.getRegisterStatus() != null) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " r.status = :status";
+        }
+
+        //회원 이름 검색
+        if (StringUtils.hasText(registerSearch.getNickName())) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " m.nickName like :name";
+        }
+
+        // 상품명 검색
+        if (StringUtils.hasText(registerSearch.getItemName())) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " i.name like :iName";
+        }
+
+        TypedQuery<Register> query = em.createQuery(jpql, Register.class)
+                .setMaxResults(1000); //최대 1000건
+
+        if (registerSearch.getRegisterStatus() != null)
+            query = query.setParameter("status", registerSearch.getRegisterStatus());
+
+        if (StringUtils.hasText(registerSearch.getNickName()))
+            query = query.setParameter("name", registerSearch.getNickName());
+
+        if (StringUtils.hasText(registerSearch.getItemName()))
+            query = query.setParameter("iName", registerSearch.getItemName());
+
+        return query.getResultList();
     }
 
     public List<Register> findMyRegisters_fetch(Long memberId) {

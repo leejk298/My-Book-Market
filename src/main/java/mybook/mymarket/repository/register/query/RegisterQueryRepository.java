@@ -1,9 +1,12 @@
 package mybook.mymarket.repository.register.query;
 
 import lombok.RequiredArgsConstructor;
+import mybook.mymarket.repository.RegisterSearch;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
@@ -22,7 +25,7 @@ public class RegisterQueryRepository {
     // => 의존관계가 순환이 되게됨 (C -> R -> C)
     // 2. findRegisters() 이 만드는 것이므로 RegisterQueryDto 가 알아야하므로 같은 패키지로 관리
     public List<RegisterQueryDto> findAllByDto() {
-        // ToOne 관계 (M, I) => SQL 직접 조인 (fetch join 아님)
+        // ToOne 관계 (M, I) Dto 로 직접 조회 => SQL 직접 조인 (fetch join 아님) => fetch join 불가능
         List<RegisterQueryDto> registers = findRegisters();
 
         return registers;
@@ -30,12 +33,77 @@ public class RegisterQueryRepository {
 
     public List<RegisterQueryDto> findRegisters() {
         return em.createQuery(
-                "select new mybook.mymarket.repository.register.query." +
-                        "RegisterQueryDto(r.id, m.id, i.id, m.nickName, i.name, i.price, i.stockQuantity, r.registerDate, r.status)" +
-                        "from Register r " +
-                        "join r.member m " +
-                        "join r.item i", RegisterQueryDto.class)
+                        "select new mybook.mymarket.repository.register.query." +
+                                "RegisterQueryDto(r.id, m.id, i.id, m.nickName, i.name, i.price, i.stockQuantity, r.registerDate, r.status)" +
+                                "from Register r " +
+                                "join r.member m " +
+                                "join r.item i", RegisterQueryDto.class)
                 .getResultList();
+    }
+
+    public List<RegisterQueryDto> findAllByDto_search(RegisterSearch registerSearch) {
+        // ToOne 관계 (M, I) => SQL 직접 조인 (fetch join 아님)
+        List<RegisterQueryDto> registers = findRegisters_search(registerSearch);
+
+        return registers;
+    }
+
+    public List<RegisterQueryDto> findRegisters_search(RegisterSearch registerSearch) {
+        // 등록 - (등록)상품, (등록)회원 => join
+        String jpql = "select new mybook.mymarket.repository.register.query." +
+                "RegisterQueryDto(r.id, m.id, i.id, m.nickName, i.name, i.price, i.stockQuantity, r.registerDate, r.status)" +
+                "from Register r join r.member m join r.item i";
+        boolean isFirstCondition = true;
+
+        //주문 상태 검색
+        if (registerSearch.getRegisterStatus() != null) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " r.status = :status";
+        }
+
+        //회원 이름 검색
+        if (StringUtils.hasText(registerSearch.getNickName())) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " m.nickName like :name";
+        }
+
+        // 상품명 검색
+        if (StringUtils.hasText(registerSearch.getItemName())) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+
+            jpql += " i.name like :iName";
+        }
+
+        TypedQuery<RegisterQueryDto> query = em.createQuery(jpql, RegisterQueryDto.class)
+                .setMaxResults(1000); //최대 1000건
+
+        if (registerSearch.getRegisterStatus() != null)
+            query = query.setParameter("status", registerSearch.getRegisterStatus());
+
+        if (StringUtils.hasText(registerSearch.getNickName()))
+            query = query.setParameter("name", registerSearch.getNickName());
+
+        if (StringUtils.hasText(registerSearch.getItemName()))
+            query = query.setParameter("iName", registerSearch.getItemName());
+
+        return query.getResultList();
     }
 
     public List<RegisterQueryDto> findMyAllByDto(Long memberId) {
@@ -53,5 +121,4 @@ public class RegisterQueryRepository {
                 .setParameter("memberId", memberId)
                 .getResultList();
     }
-
 }

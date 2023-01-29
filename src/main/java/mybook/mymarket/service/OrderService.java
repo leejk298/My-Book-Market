@@ -118,12 +118,12 @@ public class OrderService {
      * 검색
      * Repository 에서 단순히 위임만 받으므로 굳이 서비스 계층을 안타도 됨
      */
-    public List<Order> findOrders(OrderSearch orderSearch) {    // Where 절의 조건
-        return orderRepository.findAllByString_fetch(orderSearch);    // 회원명, 거래상태, 주문상테
-//        return orderRepository.findAll(orderSearch);
-    }
-
-    public List<Order> findMyOrders(Long memberId) {
-        return orderRepository.findMyOrders_fetch(memberId);
-    }
+//    public List<Order> findOrders(OrderSearch orderSearch) {    // Where 절의 조건
+//        return orderRepository.findAllByString_fetch(orderSearch);    // 회원명, 거래상태, 주문상테
+////        return orderRepository.findAll(orderSearch);
+//    }
+//
+//    public List<Order> findMyOrders(Long memberId) {
+//        return orderRepository.findMyOrders_fetch(memberId);
+//    }
 }

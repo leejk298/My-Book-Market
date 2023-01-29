@@ -178,7 +178,7 @@ public class RegisterApiController {
 
     /**
      * v4: 일반 Join - Dto
-     * : ToOne 관계(M, D)들 조회 => findRegisters()
+     * : ToOne 관계(M, D)들 Dto 로 직접 조회 => findRegisters()
      * tradeoff => Fetch 조인(V3)보다 쿼리를 직접 작성하는 양도 많지만,
      * 장점은 Fetch 조인보다 확실히 데이터를 select 한 양이 줄어듦
      */

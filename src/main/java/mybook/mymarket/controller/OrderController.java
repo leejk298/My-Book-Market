@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mybook.mymarket.controller.form.DeliveryForm;
 import mybook.mymarket.domain.Member;
 import mybook.mymarket.domain.Register;
+import mybook.mymarket.repository.order.query.OrderQueryRepository;
 import mybook.mymarket.service.dto.MemberDto;
 import mybook.mymarket.controller.dto.RegisterDto;
 import mybook.mymarket.repository.OrderRepository;
@@ -27,7 +28,8 @@ public class OrderController {
     // 주문하기 위해서 dependency 가 필요함 => 주입
     private final OrderService orderService;
     // 서비스 계층에서 단순히 위임만 하므로 바로 레포지토리 계층으로
-    private final OrderRepository orderRepository;
+    //private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
     private final MemberService memberService;
     private final RegisterService registerService;
 
@@ -90,7 +92,7 @@ public class OrderController {
         // => register 가 영속성 컨텍스트에 존재하지 않으므로 계속 DB 에 쿼리가 나가게 됨
         // => orderItem - item (ManyToOne), item - register (OneToOne) => ToOne 관계 Dto 로 직접 조인하여 해결
         // => in 절에서 order_id로 해당 주문 가져옴
-        List<OrderQueryDto> orders = orderRepository.findAllByString_optimization(orderSearch);
+        List<OrderQueryDto> orders = orderQueryRepository.findAllByString_optimization(orderSearch);
         Member member = memberService.findOne(memberId);    // 엔티티 조회
 
         // 엔티티 -> DTO
@@ -132,7 +134,7 @@ public class OrderController {
     public String myOrderList(@SessionAttribute("memberId") Long memberId, Model model) {
         // 전체 주문상품 조회와 같은 문제 => 최적화필요
         // List<Order> orders = orderService.findMyOrders(memberId);
-        List<OrderQueryDto> orderDtoList = orderRepository.findMyOrders_optimization(memberId);
+        List<OrderQueryDto> orderDtoList = orderQueryRepository.findMyOrders_optimization(memberId);
 
         model.addAttribute("orders", orderDtoList);
 

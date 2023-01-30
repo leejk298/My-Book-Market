@@ -2,6 +2,7 @@ package mybook.mymarket.repository;
 
 import lombok.RequiredArgsConstructor;
 import mybook.mymarket.domain.Order;
+import mybook.mymarket.domain.OrderItem;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +22,14 @@ public class OrderRepository {
 
     public Order findOne(Long id) { // 단권 조회
         return em.find(Order.class, id);
+    }
+
+    public Order findOrderMember(Long id) {
+        return em.createQuery("select o from Order o join fetch o.member m " +
+                "where o.id = :id", Order.class)
+                .setParameter("id", id)
+                .getSingleResult();
+
     }
 
     public Order findOrderDeal(Long id) {
@@ -189,5 +198,24 @@ public class OrderRepository {
                                 "where m.id = :memberId", Order.class)
                 .setParameter("memberId", memberId)
                 .getResultList();
+    }
+
+    /**
+     * (주문 취소), (주문 거래 완료 API)에서 사용
+     * 특정 주문과 관련된 주문상품, 상품, 등록, 회원 정보를 가져옴
+     * => OI - I (ToOne 관계), I - R (ToOne 관계), R - M (ToOne 관계)
+     * => Fetch join: 엔티티 영속화
+     */
+    public List<OrderItem> findOrderItems_fetch(Long orderId) {
+        List<OrderItem> orderItems = em.createQuery(
+                        "select oi from OrderItem oi " +
+                                "join fetch oi.item i " +
+                                "join fetch i.register r " +
+                                "join fetch r.member m " +
+                                "where oi.order.id in :orderId", OrderItem.class)
+                .setParameter("orderId", orderId)  // 파라미터 바인딩
+                .getResultList();
+
+        return orderItems;
     }
 }

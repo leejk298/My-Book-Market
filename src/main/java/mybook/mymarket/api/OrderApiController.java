@@ -36,7 +36,7 @@ public class OrderApiController {
         Long orderId = orderService.order(memberId, request.registerId, request.count, request.type);
 
         // Json 데이터를 보여주기 위한 로직
-        Order order = orderRepository.findOne(orderId);
+        Order order = orderRepository.findOrderMember(orderId);
         OrderDto orderDto = new OrderDto(order);
 
         // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
@@ -60,7 +60,7 @@ public class OrderApiController {
 
         // 쿼리: 그 후에 별도로 쿼리를 짠다
         // Json 데이터를 보여주기 위한 로직
-        Order order = orderRepository.findOne(orderId);
+        Order order = orderRepository.findOrderMember(orderId);
         OrderDto orderDto = new OrderDto(order);
 
         // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌
@@ -82,7 +82,13 @@ public class OrderApiController {
 
         // 쿼리: 그 후에 별도로 쿼리를 짠다
         // Json 데이터를 보여주기 위한 로직
-        Order order = orderRepository.findOne(orderId);
+        /**
+         * 특정 주문과 관련된 주문상품, 상품, 등록, 회원 정보를 가져옴
+         * => OI - I (ToOne 관계), I - R (ToOne 관계), R - M (ToOne 관계)
+         * => Fetch join: 엔티티 영속화
+         */
+        orderRepository.findOrderItems_fetch(orderId);
+        Order order = orderRepository.findOrderMember(orderId);
         OrderDto orderDto = new OrderDto(order);
 
         // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌

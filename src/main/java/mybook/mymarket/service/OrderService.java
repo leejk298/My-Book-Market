@@ -3,13 +3,11 @@ package mybook.mymarket.service;
 import lombok.RequiredArgsConstructor;
 
 import mybook.mymarket.domain.*;
-import mybook.mymarket.domain.item.Item;
 import mybook.mymarket.exception.NotCorrectAccess;
 import mybook.mymarket.repository.ItemRepository;
 import mybook.mymarket.repository.OrderRepository;
 import mybook.mymarket.repository.MemberRepository;
 import mybook.mymarket.repository.RegisterRepository;
-import mybook.mymarket.repository.OrderSearch;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +97,13 @@ public class OrderService {
         if (order.getDeal().getStatus().name().equals("COMP")) {
             throw new NotCorrectAccess("올바른 접근이 아닙니다.");
         }
+
+        /**
+         * 특정 주문과 관련된 주문상품, 상품, 등록, 회원 정보를 가져옴
+         * => OI - I (ToOne 관계), I - R (ToOne 관계), R - M (ToOne 관계)
+         * => Fetch join: 엔티티 영속화
+         */
+        orderRepository.findOrderItems_fetch(orderId);
 
         // 주문 취소
         order.cancel(); // 해당 주문의 주문 상품 -> 상품 -> 등록 상태까지 변경감지

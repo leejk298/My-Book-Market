@@ -34,7 +34,7 @@ public class OrderService {
         //엔티티 조회
         Member member = memberRepository.findOne(memberId);     // 회원
         // 특정 등록과 관련된 상품, 회원 찾기 (fetch join, ToOne 관계)
-        Register register = registerRepository.findRegisterItem(registerId);
+        Register register = registerRepository.findRegisterItemMember(registerId);
 
         /**
          * 거래 형태

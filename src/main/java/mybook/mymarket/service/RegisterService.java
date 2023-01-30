@@ -33,16 +33,16 @@ public class RegisterService {
     }
 
     public List<Register> findRegisters() { // 모든 등록 조회
-        return registerRepository.findAllByRegister();
+        return registerRepository.findAllWithMemberItem_fetch();
     }
 
     public List<Register> findRegistersSearch(RegisterSearch registerSearch) {  // where 절 조건에 맞는 정보
-        return registerRepository.findAllByString(registerSearch);
+        return registerRepository.findAllWithMemberItem_fetch(registerSearch);
     }
 
     public List<Register> findMyRegisters(Long memberId) {
         // 회원으로 해당 등록 가져오기
-        return registerRepository.findMyRegisters(memberId);
+        return registerRepository.findMyRegisters_fetch(memberId);
     }
 
     @Transactional
@@ -121,7 +121,8 @@ public class RegisterService {
     @Transactional
     public void cancelRegister(Long registrationId) {
         // 엔티티 조회
-        Register register = registerRepository.findOne(registrationId); // 해당 등록 가져와서
+        // 해당 등록 가져와서 관련된 상품 찾기 (fetch join, ToOne 관계)
+        Register register = registerRepository.findRegisterItem(registrationId);
 
         register.cancel();  // 등록 취소 -> 상품 재고 업데이트
     }

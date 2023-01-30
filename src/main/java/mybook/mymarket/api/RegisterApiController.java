@@ -89,7 +89,8 @@ public class RegisterApiController {
         // 등록 상태가 CANCEL 이면 주문 불가
 
         // Json 데이터를 보여주기 위한 로직
-        Register register = registerService.findOne(registerId);
+        // 특정 등록과 관련된 상품, 회원 찾기 (fetch join, ToOne 관계)
+        Register register = registerRepository.findRegisterItemMember(registerId);
         RegisterDto registerDto = new RegisterDto(register);
 
         // 등록하여 반환된 registerDto 를 Json 형식으로 보여줌

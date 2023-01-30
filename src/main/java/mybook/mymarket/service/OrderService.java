@@ -33,8 +33,8 @@ public class OrderService {
 
         //엔티티 조회
         Member member = memberRepository.findOne(memberId);     // 회원
-        Register register = registerRepository.findOne(registerId); // 등록 => 배송지 주소, 등록상품조회에 필요
-        Item item = itemRepository.findOne(register.getItem().getId()); // 등록 상품
+        // 특정 등록과 관련된 상품, 회원 찾기 (fetch join, ToOne 관계)
+        Register register = registerRepository.findRegisterItem(registerId);
 
         /**
          * 거래 형태
@@ -54,7 +54,7 @@ public class OrderService {
         deal.setStatus(DealStatus.WAIT);    // 거래 상태 WAIT
 
         // 주문상품 생성 => 생성 메소드 이용(static)
-        OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), count);
+        OrderItem orderItem = OrderItem.createOrderItem(register.getItem(), register.getItem().getPrice(), count);
 
         // 주문 생성 => 생성 메소드 이용(static)
         Order order = Order.createOrder(member, deal, orderItem);
@@ -76,7 +76,8 @@ public class OrderService {
     @Transactional
     public void completeDeal(Long orderId) {    // 거래 완료
         // 엔티티 조회
-        Order order = orderRepository.findOne(orderId); // 해당 주문 가져와서
+        // 특정 주문과 관련된 거래 찾기 (fetch join, ToOne 관계)
+        Order order = orderRepository.findOrderDeal(orderId);
 
         if (order.getStatus().name().equals("CANCEL")) {
             throw new NotCorrectAccess("올바른 접근이 아닙니다.");
@@ -92,7 +93,8 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Long orderId) { // 취소 시 id 값만 넘어옴 => 찾아야함 => 엔티티 조회
         // 엔티티 조회
-        Order order = orderRepository.findOne(orderId); // 값 가져옴
+        // 특정 주문과 관련된 거래 찾기 (fetch join, ToOne 관계)
+        Order order = orderRepository.findOrderDeal(orderId);
 
         if (order.getDeal().getStatus().name().equals("COMP")) {
             throw new NotCorrectAccess("올바른 접근이 아닙니다.");

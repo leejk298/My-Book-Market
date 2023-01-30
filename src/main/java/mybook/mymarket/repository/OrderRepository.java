@@ -23,6 +23,15 @@ public class OrderRepository {
         return em.find(Order.class, id);
     }
 
+    public Order findOrderDeal(Long id) {
+        // 특정 주문과 관련된 거래 찾기 (fetch join, ToOne 관계)
+        return em.createQuery(
+                "select o from Order o join fetch o.deal d " +
+                        "where o.id = :id", Order.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
     /**
      * 일반 join - v2
      */

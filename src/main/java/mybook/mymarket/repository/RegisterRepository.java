@@ -25,6 +25,15 @@ public class RegisterRepository {
         return em.find(Register.class, id);
     }
 
+    public Register findRegisterItem(Long id) {
+        // 특정 등록과 관련된 상품, 회원 찾기 (fetch join, ToOne 관계)
+        return em.createQuery(
+                "select r from Register r join fetch r.item i join fetch r.member m " +
+                        "where r.id = :id", Register.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
     public Register findOneByItem(Long id) { // 등록상품으로 해당 등록 가져오기
         return em.createQuery("select r from Register r join r.item i " +
                         "where i.id = :id", Register.class)
@@ -35,8 +44,8 @@ public class RegisterRepository {
     public List<Register> findMyRegisters(Long memberId) {  // 회원으로 해당 등록 가져오기
         return em.createQuery(
                         "select r from Register r " +
-                                "join r.member m " +
-                                "join r.item i " +
+                                "join fetch r.member m " +
+                                "join fetch r.item i " +
                                 "where m.id = :memberId", Register.class)
                 .setParameter("memberId", memberId)
                 .getResultList();
@@ -44,13 +53,13 @@ public class RegisterRepository {
 
     public List<Register> findAllByRegister() { // 모든 아이템과 주문한 회원을 가져오기 위해
         return em.createQuery("select r from Register r " +
-                        "join r.item i join r.member m", Register.class)
+                        "join fetch r.item i join fetch r.member m", Register.class)
                 .getResultList();
     }
 
     public List<Register> findAllByString(RegisterSearch registerSearch) {  // where 절 조건에 맞는 등록 정보 가져오기
-        // 등록 - (등록)상품, (등록)회원 => join
-        String jpql = "select r from Register r join r.member m join r.item i";
+        // 등록 - (등록)상품, (등록)회원 => fetch join (ToOne 관계)
+        String jpql = "select r from Register r join fetch r.member m join fetch r.item i";
         boolean isFirstCondition = true;
 
         //주문 상태 검색

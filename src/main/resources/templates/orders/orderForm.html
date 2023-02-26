@@ -17,7 +17,7 @@
     <div class="form-group">
       <label for="register.item">상품명</label>
       <select name="registerId" id="register.item" class="form-control">
-        <option value="">상품선택</option>
+        <option value=""> 상품 선택 </option>
         <option th:if="${register.memberId != member.id && register.status.name() == 'REGISTER'}"
                 th:each="register : ${registers}"
                 th:value="${register.registerId}"
@@ -34,7 +34,7 @@
     <div class="form-group">
       <label>배송 방식</label>
       <select name="type" id="deliveryCode.code" class="form-control">
-        <option value="">==배송 방식 선택==</option>
+        <option value=""> 배송 선택 </option>
         <option th:field="*{deliveryCodes}"
                 th:each="type : ${deliveryCodes}"
                 th:value="${type.code}"

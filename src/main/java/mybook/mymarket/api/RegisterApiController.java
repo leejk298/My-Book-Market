@@ -226,7 +226,7 @@ public class RegisterApiController {
     /**
      * 나의 (등록)상품 조회
      */
-    @GetMapping("/api/v2/myRegisters/{id}")
+    @GetMapping("/api/v2/my-registers/{id}")
     public Result<List<RegisterDto>> myRegistersV2(@PathVariable("id") Long memberId) {
         List<Register> myRegisters = registerRepository.findMyRegisters(memberId);
 
@@ -237,7 +237,7 @@ public class RegisterApiController {
         return new Result<>(result.size(), result);
     }
 
-    @GetMapping("/api/v3/myRegisters/{id}")
+    @GetMapping("/api/v3/my-registers/{id}")
     public Result<List<RegisterDto>> myRegistersV3(@PathVariable("id") Long memberId) {
         List<Register> myRegisters = registerRepository.findMyRegisters_fetch(memberId);
 
@@ -248,7 +248,7 @@ public class RegisterApiController {
         return new Result<>(result.size(), result);
     }
 
-    @GetMapping("/api/v4/myRegisters/{id}")
+    @GetMapping("/api/v4/my-registers/{id}")
     public Result<List<RegisterQueryDto>> myRegistersV4(@PathVariable("id") Long memberId) {
         List<RegisterQueryDto> myAllByDto = registerQueryRepository.findMyAllByDto(memberId);
 

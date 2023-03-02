@@ -258,7 +258,7 @@ public class OrderApiController {
     /**
      * 나의 주문 조회
      */
-    @GetMapping("/api/v2/myOrders/{id}")
+    @GetMapping("/api/v2/my-orders/{id}")
     public Result<List<OrderDto>> myOrdersV2(@PathVariable("id") Long memberId) {
         List<Order> myOrders = orderRepository.findMyOrders(memberId);
 
@@ -269,7 +269,7 @@ public class OrderApiController {
         return new Result<>(result.size(), result);
     }
 
-    @GetMapping("/api/v3/myOrders/{id}")
+    @GetMapping("/api/v3/my-orders/{id}")
     public Result<List<OrderDto>> myOrdersV3(@PathVariable("id") Long memberId) {
         List<Order> myOrders = orderRepository.findMyOrders_fetch(memberId);
 
@@ -280,7 +280,7 @@ public class OrderApiController {
         return new Result<>(result.size(), result);
     }
 
-    @GetMapping("/api/v4/myOrders/{id}")
+    @GetMapping("/api/v4/my-orders/{id}")
     public Result<List<OrderQueryDto>> myOrdersV4(@PathVariable("id") Long memberId) {
         List<OrderQueryDto> myAllByDtoOptimization = orderQueryRepository.findMyAllByDto_optimization(memberId);
 

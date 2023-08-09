@@ -1,5 +1,5 @@
 # My_Book_Market
-중고책 거래 웹어플리케이션
+상품 거래 웹어플리케이션
 
 ## ✏️ JPA-SpringBoot-Project
 JPA, SpringBoot를 활용한 프로젝트
